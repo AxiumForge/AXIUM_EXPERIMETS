@@ -20,17 +20,35 @@ class LeafSpiral {
 class LeafSpiralShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
-      var turns = 2.5;
-      var width = 0.18;
-      var ang = atan(pr.z / pr.x);
-      var r = length(pr.xz);
-      var target = 0.25 + 0.2 * (ang / (3.14159265 * 2.0) * turns);
-      var leaf = abs(r - target) - width;
-      var vein = abs(pr.z) * 0.1;
-      var dist = leaf + vein;
-      var col = vec3(0.35, 0.9, 0.55);
-      return vec4(dist, col.x, col.y, col.z);
+      // 3D box surface
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var local = p;
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
+
+      var col = vec3(0.3, 0.3, 0.3);
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Leaf Spiral on face
+        var turns = 2.5;
+        var width = 0.18;
+        var ang = atan(dy / dx);
+        var r = sqrt(dx * dx + dy * dy);
+        var target = 0.25 + 0.2 * (ang / (3.14159265 * 2.0) * turns);
+        var leaf = abs(r - target) - width;
+        var vein = abs(dy) * 0.1;
+        var spiral2D = leaf + vein;
+
+        if (spiral2D < 0.0) {
+          col = vec3(0.35, 0.9, 0.55); // Light green
+        }
+      }
+
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

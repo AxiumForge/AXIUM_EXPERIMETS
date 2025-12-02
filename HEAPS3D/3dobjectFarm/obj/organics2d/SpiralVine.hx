@@ -19,16 +19,34 @@ class SpiralVine {
 class SpiralVineShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
-      var turns = 3.0;
-      var thickness = 0.12;
-      var angle = atan(pr.z / pr.x);
-      var radius = length(pr.xz);
-      var spiral = angle / (3.14159265 * 2.0) * turns;
-      var targetR = 0.4 + 0.15 * spiral;
-      var dist = abs(radius - targetR) - thickness;
-      var col = vec3(0.25, 0.8, 0.55);
-      return vec4(dist, col.x, col.y, col.z);
+      // 3D box surface
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var local = p;
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
+
+      var col = vec3(0.3, 0.3, 0.3);
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Spiral Vine on face
+        var turns = 3.0;
+        var thickness = 0.12;
+        var angle = atan(dy / dx);
+        var radius = sqrt(dx * dx + dy * dy);
+        var spiral = angle / (3.14159265 * 2.0) * turns;
+        var targetR = 0.4 + 0.15 * spiral;
+        var vine2D = abs(radius - targetR) - thickness;
+
+        if (vine2D < 0.0) {
+          col = vec3(0.25, 0.8, 0.55); // Teal
+        }
+      }
+
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

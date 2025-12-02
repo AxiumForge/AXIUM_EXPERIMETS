@@ -20,17 +20,33 @@ class OrnateKnot {
 class OrnateKnotShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
-      var radius = 0.45;
-      var thickness = 0.12;
-      var u = pr.x;
-      var v = pr.z;
-      var r = length(vec2(u, v));
-      var theta = atan(v / u);
-      var knot = radius + 0.1 * sin(3.0 * theta);
-      var dist = abs(r - knot) - thickness;
-      var col = vec3(0.8, 0.55, 0.2);
-      return vec4(dist, col.x, col.y, col.z);
+      // 3D box surface
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var local = p;
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
+
+      var col = vec3(0.3, 0.3, 0.3);
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Ornate Knot on face
+        var radius = 0.45;
+        var thickness = 0.12;
+        var r = sqrt(dx * dx + dy * dy);
+        var theta = atan(dy / dx);
+        var knot = radius + 0.1 * sin(3.0 * theta);
+        var knot2D = abs(r - knot) - thickness;
+
+        if (knot2D < 0.0) {
+          col = vec3(0.8, 0.55, 0.2); // Orange-brown
+        }
+      }
+
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

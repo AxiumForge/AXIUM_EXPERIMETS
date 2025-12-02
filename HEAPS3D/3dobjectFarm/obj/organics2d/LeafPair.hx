@@ -32,15 +32,33 @@ class LeafPairShader extends BaseRaymarchShader {
     }
 
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
-      var leafWidth = 0.35;
-      var leafLength = 0.8;
-      var gap = 0.1;
-      var dLeft = leafSDF(vec2(pr.x + gap, pr.z), leafWidth, leafLength);
-      var dRight = leafSDF(vec2(-pr.x + gap, pr.z), leafWidth, leafLength);
-      var dist = min(dLeft, dRight);
-      var col = vec3(0.3, 0.9, 0.5);
-      return vec4(dist, col.x, col.y, col.z);
+      // 3D box surface
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var local = p;
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
+
+      var col = vec3(0.3, 0.3, 0.3);
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Leaf Pair on face
+        var leafWidth = 0.35;
+        var leafLength = 0.8;
+        var gap = 0.1;
+        var dLeft = leafSDF(vec2(dx + gap, dy), leafWidth, leafLength);
+        var dRight = leafSDF(vec2(-dx + gap, dy), leafWidth, leafLength);
+        var leaf2D = min(dLeft, dRight);
+
+        if (leaf2D < 0.0) {
+          col = vec3(0.3, 0.9, 0.5); // Green
+        }
+      }
+
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

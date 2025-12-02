@@ -22,19 +22,37 @@ class LotusFringe {
 class LotusFringeShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
-      var petals = 12.0;
-      var baseR = 0.3;
-      var tipR = 0.7;
-      var ang = atan(pr.z / pr.x);
-      var r = length(pr.xz);
-      var sector = 3.14159265 * 2.0 / petals;
-      var a = mod(mod(ang, sector) + sector, sector) - sector * 0.5;
-      var k = cos(a);
-      var target = baseR + (tipR - baseR) * k;
-      var dist = r - target;
-      var col = vec3(0.85, 0.75, 0.3);
-      return vec4(dist, col.x, col.y, col.z);
+      // 3D box surface
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var local = p;
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
+
+      var col = vec3(0.3, 0.3, 0.3);
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Lotus Fringe on face
+        var petals = 12.0;
+        var baseR = 0.3;
+        var tipR = 0.7;
+        var ang = atan(dy / dx);
+        var r = sqrt(dx * dx + dy * dy);
+        var sector = 3.14159265 * 2.0 / petals;
+        var a = mod(mod(ang, sector) + sector, sector) - sector * 0.5;
+        var k = cos(a);
+        var target = baseR + (tipR - baseR) * k;
+        var lotus2D = r - target;
+
+        if (lotus2D < 0.0) {
+          col = vec3(0.85, 0.75, 0.3); // Gold
+        }
+      }
+
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

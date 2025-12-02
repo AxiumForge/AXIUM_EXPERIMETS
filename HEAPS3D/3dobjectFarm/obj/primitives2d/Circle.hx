@@ -18,23 +18,35 @@ class CircleShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
       // 3D box (thin card/panel) - this is the surface
-      var boxSize = vec3(2.0, 2.0, 0.08);
-      var dx = abs(p.x) - boxSize.x;
-      var dy = abs(p.y) - boxSize.y;
-      var dz = abs(p.z) - boxSize.z;
-      var box3D = max(max(dx, dy), dz);
+      var boxHalf = vec3(1.0, 1.0, 0.04);
+      var boxCenter = vec3(0.0, 0.0, 0.0);
 
-      // 2D Circle - defines the cutout/pattern on the box surface (z=0 plane)
-      var radius = 0.8;
-      var circle2D = length(vec2(p.x, p.y)) - radius;
+      // Transform to box local space
+      var local = p - boxCenter;
+
+      // Box SDF
+      var d = abs(local) - boxHalf;
+      var box3D = max(max(d.x, d.y), d.z);
 
       // Color based on 2D pattern
       var col = vec3(0.3, 0.3, 0.3); // Default box surface color (gray)
 
-      // Only show circle on front face (positive Z side facing camera)
-      if (p.z > 0.0 && circle2D < 0.0) {
-        // Inside 2D circle cutout on front face - use circle color
-        col = vec3(0.2, 0.8, 0.9); // Cyan circle
+      // Only on front face (z ≈ boxHalf.z) - larger epsilon to catch raymarch samples
+      var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
+
+      if (onFrontFace) {
+        // Project onto face coordinate system (XY on the face)
+        var dx = local.x;
+        var dy = local.y;
+
+        // 2D Circle SDF on the face itself
+        var radius = 0.8;
+        var circle2D = sqrt(dx * dx + dy * dy) - radius;
+
+        if (circle2D < 0.0) {
+          // Inside 2D circle on box surface - use circle color
+          col = vec3(0.2, 0.8, 0.9); // Cyan circle
+        }
       }
 
       // Raymarch the 3D box, colored by 2D pattern

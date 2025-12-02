@@ -39,8 +39,8 @@
 - [ ] Test performance med mange shape switches
 
 #### Sekvens screenshot
-- [ ] Lav en screenshot sekvens der tager billeder af en forms animatiionscyklus 1-20 bare fast selkvens med -sc-sekv og den gemmer hele sekvensen i /sc/sekvens-nummer/ og alle billeder i forlderen. se filen @Screenshot.hx
-- [ ] Integrer ny Screenshot.hx helper i sekvens-flow (Main refaktor følger senere).
+- [x] Lav en screenshot sekvens der tager billeder af en forms animatiionscyklus 1-20 bare fast selkvens med -sc-sekv og den gemmer hele sekvensen i /sc/sekvens-nummer/ og alle billeder i forlderen. se filen @Screenshot.hx
+- [x] Integrer ny Screenshot.hx helper i sekvens-flow (Main refaktor følger senere).
 
 #### Tekniske Noter
 - Package struktur: obj.primitives, obj.primitives2d, obj.derivates, obj._2DOrganics, obj._3dOrganic

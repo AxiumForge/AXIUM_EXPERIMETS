@@ -44,6 +44,13 @@ class Main extends App {
   var currentScreenshotIndex : Int = 0;
   var framesBeforeScreenshot : Int = 0;
 
+  // Frame sequence screenshot flow
+  var sequenceMode : Bool = false;
+  var sequenceFrameCount : Int = 20;
+  var currentSequenceFrame : Int = 0;
+  var sequenceDir : String = "";
+  var sequenceNumber : Int = 1;
+
   // Viewport dimensions
   var viewportWidth : Int = 0;
   var viewportHeight : Int = 0;
@@ -81,6 +88,9 @@ class Main extends App {
       if (arg == "--sc") {
         screenshotMode = true;
         trace("Auto-screenshot enabled via --sc flag");
+      } else if (arg == "--seq" || arg == "--sc-seq") {
+        sequenceMode = true;
+        trace("Frame sequence screenshot mode enabled");
       } else if (StringTools.startsWith(arg, "--")) {
         // Check if this arg matches any shape name (case-insensitive)
         var shapeName = arg.substring(2);
@@ -92,6 +102,26 @@ class Main extends App {
           }
         }
       }
+    }
+
+    // Handle frame sequence mode
+    if (sequenceMode) {
+      // Select shape if specified, otherwise use current shape
+      if (requestedShapes.length > 0) {
+        var shapeIndex = shapeNames.indexOf(requestedShapes[0]);
+        if (shapeIndex >= 0) {
+          selectShape(shapeIndex);
+        }
+      }
+
+      // Setup sequence directory
+      sequenceDir = Screenshot.sequenceDir(screenshotDir, sequenceNumber);
+      trace("Frame sequence: capturing " + sequenceFrameCount + " frames of " + shapeNames[currentShape]);
+      trace("Sequence directory: " + sequenceDir);
+
+      currentSequenceFrame = 0;
+      autoScreenshot = true;
+      return;
     }
 
     // If --sc is set with shape flags, prepare screenshot sequence
@@ -188,6 +218,38 @@ class Main extends App {
     e.clear(0x000000);
     fx.render();
     e.popTarget();
+
+    // Handle frame sequence mode
+    if (sequenceMode && currentSequenceFrame < sequenceFrameCount) {
+      // Render full frame with UI to screenshot texture
+      if (screenshotTexture == null || screenshotTexture.width != e.width || screenshotTexture.height != e.height) {
+        if (screenshotTexture != null) screenshotTexture.dispose();
+        screenshotTexture = new Texture(e.width, e.height, [Target]);
+      }
+
+      e.pushTarget(screenshotTexture);
+      e.clear(0x000000);
+      copy.apply(viewportTexture, null);
+      s2d.render(e);
+      e.popTarget();
+
+      // Save frame using Screenshot.saveSequenceFrame()
+      var savedPath = Screenshot.saveSequenceFrame(screenshotTexture, sequenceDir, currentSequenceFrame + 1, "frame_");
+      trace("Saved frame " + (currentSequenceFrame + 1) + "/" + sequenceFrameCount);
+
+      currentSequenceFrame++;
+
+      // Exit when sequence complete
+      if (currentSequenceFrame >= sequenceFrameCount) {
+        trace("Frame sequence complete! Saved to: " + sequenceDir);
+        Sys.exit(0);
+      }
+
+      // Display to screen
+      e.clear(0x000000);
+      copy.apply(screenshotTexture, null);
+      return;
+    }
 
     // Handle frame delay before screenshot
     if (pendingScreenshot && framesBeforeScreenshot > 0) {

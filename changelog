@@ -24,6 +24,13 @@
   - 3-frame delay between shader swaps for proper rendering
 
 ### Added
+- **Frame sequence screenshots** - Capture animation cycles of individual shapes
+  - New `--seq` or `--sc-seq` flag to enable frame sequence mode
+  - Captures 20 frames of a shape's animation cycle
+  - Can specify shape: `--seq --wavycapsule` or uses current shape
+  - Saves to `/sc/sequence-01/` directory with `frame_0001.png` to `frame_0020.png` naming
+  - Uses Screenshot.hx's `sequenceDir()` and `saveSequenceFrame()` methods
+  - Perfect for creating GIF animations or studying shape behavior
 - **Shapes.hx barrel file** - Centralized import for all 39 shape classes using Haxe barrel pattern
   - Single `import Shapes;` replaces 39 individual shape imports
   - Makes all shape classes available to Type.resolveClass() for dynamic shader instantiation
@@ -96,6 +103,8 @@
 - ✅ Refactored Main.hx builds and runs successfully
 - ✅ ShapePanel.hx UI integration functional (panel, scrolling, selection)
 - ✅ Screenshot.hx integration tested (`--sc --sphere --torus` generates correct files with Screenshot.saveWithName())
+- ✅ Frame sequence tested (`--seq --wavycapsule` captures 20 frames to sc/sequence-01/)
+- ✅ Shapes.hx barrel import tested (all shapes load correctly with single import)
 
 ### Technical Details
 

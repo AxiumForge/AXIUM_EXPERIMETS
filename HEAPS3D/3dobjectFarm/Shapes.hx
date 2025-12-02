@@ -52,8 +52,11 @@ import obj.organics3d.SoftSphereWrap;
 import obj.organics3d.UndulatingPlane;
 import obj.organics3d.WavyCapsule;
 
+// SDF Textures
+import obj.sdfTextures.LayeredScene;
+
 /**
-  Barrel file that imports all 39 SDF shape classes.
+  Barrel file that imports all 40 SDF shape classes.
   Makes them available to Type.resolveClass() when this file is imported.
 
   Usage:

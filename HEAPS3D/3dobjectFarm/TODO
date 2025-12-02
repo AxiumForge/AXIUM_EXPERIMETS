@@ -1,0 +1,36 @@
+# TODO
+
+## LayeredScene Transparency Issue
+
+**Problem:**
+LayeredScene skal vise 2D SDF patterns (rød firkant, juletræ, stakit) på 3D bokse, hvor bokse-områder UDEN patterns skal være gennemsigtige/usynlige.
+
+**Hvad vi har prøvet (ingen virker):**
+1. ❌ Conditional distance field - kun inkludere bokse hvor patterns er
+   - Resultat: Patterns blev også usynlige
+
+2. ❌ Sætte farve til (0,0,0) for områder uden patterns
+   - Resultat: Sort, ikke gennemsigtig
+
+3. ❌ Bruge GLSL `discard` keyword i fragment shader
+   - Resultat: Stadig sort
+
+4. ❌ Implementere alpha kanal (output.color = vec4(col, alpha))
+   - Resultat: Ingen forskel
+
+**Konklusion:**
+Problemet er sandsynligvis i Heaps/OpenGL rendering setup:
+- GL_BLEND skal måske enables
+- ScreenShader understøtter måske ikke alpha blending
+- BaseRaymarchShader er ikke sat op til transparency
+
+**Nuværende tilstand:**
+- LayeredScene eksisterer og kompilerer
+- Viser 2D patterns korrekt
+- Men bokse-områder uden patterns viser sort i stedet for gennemsigtig
+- Nuværende kode bruger alpha kanal approach
+
+**Næste skridt:**
+- Undersøg Heaps ScreenShader alpha blending setup
+- Evt. modificer BaseRaymarchShader til at enable blending
+- Eller acceptér limitation og brug en alternativ visuel tilgang

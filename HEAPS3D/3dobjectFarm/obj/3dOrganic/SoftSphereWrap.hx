@@ -15,3 +15,21 @@ class SoftSphereWrap {
     return d - (baseRadius + ripple);
   }
 }
+
+class SoftSphereWrapShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var baseRadius = 0.7;
+      var wobble = 0.12;
+      var freq = 3.5;
+
+      var d = length(pr);
+      var ripple = sin((pr.x + pr.y + pr.z) * freq + time * 1.5) * wobble;
+      var dist = d - (baseRadius + ripple);
+
+      var col = vec3(0.75, 0.4, 0.9);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

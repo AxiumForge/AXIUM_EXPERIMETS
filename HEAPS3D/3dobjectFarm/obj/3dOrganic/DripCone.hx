@@ -23,3 +23,24 @@ class DripCone {
     return Math.min(dCone, dDrip);
   }
 }
+
+class DripConeShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var height = 1.1;
+      var radius = 0.7;
+      var dripRadius = 0.2;
+
+      var q = vec2(length(pr.xz), pr.y);
+      var k = vec2(radius / height, 1.0);
+      var dCone = max(q.y * k.y - q.x * k.x, q.y) - height * 0.5;
+
+      var dDrip = length(pr + vec3(0.0, height * 0.2, 0.0)) - dripRadius;
+
+      var dist = min(dCone, dDrip);
+      var col = vec3(0.85, 0.55, 0.4);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

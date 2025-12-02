@@ -26,3 +26,26 @@ class WavyCapsule {
     return v < lo ? lo : (v > hi ? hi : v);
   }
 }
+
+class WavyCapsuleShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var a = vec3(-0.6, -0.5, 0.8);
+      var b = vec3(0.6, 0.6, 0.8);
+      var r = 0.25;
+      var amp = 0.08;
+      var freq = 4.0;
+
+      var pa = pr - a;
+      var ba = b - a;
+      var h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+      var base = length(pa - ba * h) - r;
+      var wave = sin(h * freq + time * 1.2) * amp;
+      var dist = base + wave;
+
+      var col = vec3(0.95, 0.5, 0.35);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

@@ -1,0 +1,74 @@
+# AXIUM_EXPERIMENTS TODO
+
+## I Gang (2025-12-02)
+
+### HEAPS3D/3dobjectFarm - Modul�r SDF Shape Arkitektur
+
+#### F�rdiggjort 
+- [x] BaseRaymarchShader med f�lles raymarching/lighting logik
+- [x] Konverteret 20/39 shapes til korrekt module pattern:
+  - [x] Primitives (9): Box, Sphere, Capsule, Cone, Cylinder, Ellipsoid, Plane, Pyramid, Torus
+  - [x] 2D Primitives (5): Box2D, Circle, Heart, RoundedBox2D, Star
+  - [x] Derivates (6): HalfCapsule, HoledPlane, HollowBox, HollowSphere, QuarterTorus, ShellCylinder
+- [x] Dynamisk shader swapping system med Type.resolveClass()
+- [x] Fix nested class fejl (Haxe underst�tter ikke nested classes)
+- [x] Fix duplikeret @param var time (arves fra BaseRaymarchShader)
+- [x] Fix inline variable fejl (fjernet inline fra static vars med new Vector())
+- [x] Fix package/folder mismatch (omd�bt 2dprimitives � primitives2d)
+- [x] Screenshot funktionalitet (F12/P keys + --sc flag)
+- [x] UI panel med shape kategorier og scroll
+
+#### Mangler �
+- [ ] Gør det muligt at bruge --sc med en form --torus --2dbox så du kan se alle former der er i et screenshot - sørg for at --form ikke er hardcoded men et system der automatisk tilføjer ved nye forme.
+- [ ] Konverter resterende 19 shapes til module pattern:
+  - [ ] 2D Organics (7): FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
+  - [ ] 3D Organic (12): BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
+- [x] Mangler shader + GPU map(): obj._3dOrganic.WavyCapsule
+- [x] Mangler shader + GPU map(): obj._3dOrganic.BulbTreeCrown
+- [x] Mangler shader + GPU map(): obj._3dOrganic.SoftSphereWrap
+- [x] Mangler shader + GPU map(): obj._3dOrganic.JellyDonut
+- [x] Mangler shader + GPU map(): obj._3dOrganic.UndulatingPlane
+- [x] Mangler shader + GPU map(): obj._3dOrganic.KnotTube
+- [x] Mangler shader + GPU map(): obj._3dOrganic.RibbonTwist
+- [x] Mangler shader + GPU map(): obj._3dOrganic.DripCone
+- [x] Mangler shader + GPU map(): obj._3dOrganic.MeltedBox
+- [x] Mangler shader + GPU map(): obj._3dOrganic.PuffyCross
+- [ ] Test at alle 20 konverterede shapes renderer korrekt ved shape switching
+- [ ] Verificer at fx.dispose() + ny ScreenFx virker korrekt for shader swapping
+- [ ] Opdater CHANGELOG med dynamisk shader system
+- [ ] Test performance med mange shape switches
+
+#### Sekvens screenshot
+- [ ] Lav en screenshot sekvens der tager billeder af en forms animatiionscyklus 1-20 bare fast selkvens med -sc-sekv og den gemmer hele sekvensen i /sc/sekvens-nummer/ og alle billeder i forlderen. 
+- [ ] Integrer ny Screenshot.hx helper i sekvens-flow (Main refaktor følger senere).
+
+#### Tekniske Noter
+- Package struktur: obj.primitives, obj.primitives2d, obj.derivates, obj._2DOrganics, obj._3dOrganic
+- Dynamisk shader instantiering: Type.resolveClass(package + "." + shapeName + "Shader")
+- Shader swapping: fx.dispose() � fx = new ScreenFx(newShader)
+- BaseRaymarchShader h�ndterer: raymarching loop, normal calc, lighting (diffuse, rim, ambient)
+- Child shaders: kun implementerer map(p:Vec3):Vec4 funktion
+
+## N�ste Opgaver
+
+### HEAPS3D/3dobjectFarm
+- [ ] Refaktor Main.hx: flyt sidepanel UI (panel, scroll, hotkeys) ud i et separat modul/klasse.
+- [ ] Refaktor Main.hx: flyt shape-liste/shader-factory (useDefaultShapes, createShaderForShape) til eget modul.
+- [ ] Refaktor Main.hx: gør Main til orkestrator der kun initierer engine, håndterer render loop, kamerastate og screenshot flow med brug af de nye moduler.
+- [ ] Implementer shape blending/morphing mellem former
+- [ ] Add parameter controls i UI for each shape (radius, size, etc.)
+- [ ] Export shape gallery screenshots (alle 39 shapes)
+- [ ] Performance profiling af shader swapping
+
+### Generelt
+- [ ] Opdater docs/heaps3dscene.md med ny modul�r arkitektur
+- [ ] Cleanup: fjern gamle SDFObjectFarmShader filer hvis de findes
+
+## F�rdige Projekter
+
+### L�VR3D
+- [x] Fjernet fra projekt (fokus p� Heaps/Haxe)
+
+## Noter
+- Husk at opdatere CHANGELOG undervejs
+- Vi taler dansk til hinanden - al tekst i projekt/repo og al kode er engelsk baseret

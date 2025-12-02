@@ -26,3 +26,26 @@ class BulbTreeCrown {
     return Math.min(trunk, Math.min(d1, Math.min(d2, d3)));
   }
 }
+
+class BulbTreeCrownShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var trunkH = 0.4;
+      var trunkR = 0.15;
+      var bulbR = 0.55;
+
+      var cyl = vec2(length(pr.xz) - trunkR, abs(pr.y + trunkH * 0.5) - trunkH * 0.5);
+      var trunk = min(max(cyl.x, cyl.y), 0.0) + length(max(cyl, vec2(0.0, 0.0)));
+
+      var crownCenter = vec3(0.0, trunkH * 0.5 + bulbR * 0.6, 0.0);
+      var d1 = length(pr - crownCenter) - bulbR;
+      var d2 = length(pr - (crownCenter + vec3(0.3, 0.15, 0.0))) - bulbR * 0.8;
+      var d3 = length(pr - (crownCenter + vec3(-0.25, 0.2, 0.25))) - bulbR * 0.7;
+
+      var dist = min(trunk, min(d1, min(d2, d3)));
+      var col = vec3(0.45, 0.85, 0.35);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

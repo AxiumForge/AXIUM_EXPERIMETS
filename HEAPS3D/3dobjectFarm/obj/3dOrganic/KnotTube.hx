@@ -17,3 +17,23 @@ class KnotTube {
     return Math.sqrt(dx * dx + dy * dy) - radius;
   }
 }
+
+class KnotTubeShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var radius = 0.18;
+      var major = 0.9;
+
+      var ang = atan(pr.y / pr.x);
+      var qx = major + cos(3.0 * ang) * 0.2;
+      var qz = sin(3.0 * ang) * 0.2;
+      var dx = length(vec2(pr.x, pr.y)) - qx;
+      var dy = pr.z - qz;
+      var dist = length(vec2(dx, dy)) - radius;
+
+      var col = vec3(0.9, 0.65, 0.3);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

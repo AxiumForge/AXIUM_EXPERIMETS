@@ -16,3 +16,22 @@ class JellyDonut {
     return base + wobble;
   }
 }
+
+class JellyDonutShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var major = 0.9;
+      var minor = 0.28;
+      var jelly = 0.12;
+
+      var q = vec2(length(pr.xz) - major, pr.y);
+      var base = length(q) - minor;
+      var wobble = sin((pr.x + pr.y) * 2.2) * jelly;
+      var dist = base + wobble;
+
+      var col = vec3(0.95, 0.3, 0.55);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

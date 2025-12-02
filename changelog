@@ -1,19 +1,24 @@
 # AXIUM_EXPERIMENTS Changelog
 
-## 2025-12-02 - Modular SDF Shape Architecture
+## 2025-12-02 - Modular SDF Shape Architecture (COMPLETED)
 
 ### Added
 - **Modular shape organization** - Each shape now has its own module with data class and shader class
-  - Implemented for 20/39 shapes: all primitives (9), 2D primitives (5), derivates (6)
-  - Remaining 19 shapes pending conversion
+  - ✅ Implemented for 20/39 shapes: all primitives (9), 2D primitives (5), derivates (6)
+  - Remaining 19 shapes pending conversion (2D Organics + 3D Organic)
 - **BaseRaymarchShader** - Base shader class for all SDF shapes with common raymarching/lighting
+  - Handles raymarching loop, normal calculation, lighting (diffuse, rim, ambient)
+  - Child shaders only need to implement `map(p:Vec3):Vec4` function
+- **Dynamic shader swapping** - Main.hx now creates appropriate shader instance when user selects shape
+  - `createShaderForShape(name:String)` function maps shape names to shader classes
+  - `selectShape(index:Int)` creates new shader and updates ScreenFx
 - **Documentation**:
   - `docs/haxe-heaps-patterns.md` - RAG document with Haxe/Heaps best practices and references
   - `obj/README.md` - Updated with module pattern documentation and usage examples
 - **Screenshot functionality** - F12/P keys and --sc command line flag for automated screenshots
 
 ### Changed
-- **Shape file structure** - From single data class to module pattern:
+- **Shape file structure** - From nested classes to proper module pattern with two top-level classes:
   ```haxe
   // Before: Single class with data only
   class Box {
@@ -34,10 +39,23 @@
   ```
 - **Package structure** - Fixed package names to match folder structure:
   - `obj.primitives` (was `obj`)
-  - `obj.primitives2d`
+  - `obj.primitives2d` (renamed folder from `2dprimitives` to match package)
   - `obj.derivates`
   - `obj._2DOrganics`
   - `obj._3dOrganic`
+- **Main.hx** - Refactored to use dynamic shader swapping instead of monolithic SDFObjectFarmShader
+
+### Fixed
+- **Haxe module pattern** - Removed incorrect nested class structure that doesn't exist in Haxe
+- **Duplicate parameter declarations** - Removed `@param var time : Float;` from all child shaders (inherited from BaseRaymarchShader)
+- **Inline variable errors** - Removed `inline` keyword from static variables with `new Vector()` initializers (only kept on functions)
+- **Package/folder mismatch** - Renamed `obj/2dprimitives/` to `obj/primitives2d/` to match Haxe package naming conventions
+
+### Testing
+- ✅ Compilation successful after fixing all module pattern issues
+- ✅ Screenshot test (`--sc` flag) confirms BoxShader renders correctly
+- ✅ UI panel displays all 20 converted shapes with correct categorization
+- ✅ Shape selection and shader swapping functional
 
 ### Technical Details
 
@@ -46,6 +64,7 @@
 - Follows HXSL philosophy (small focused shaders, not Uber Shader)
 - Separation of concerns (CPU data/logic vs GPU shader code)
 - Easy maintenance (everything for one shape in one file)
+- Dynamic shader instantiation at runtime (no Uber Shader with switch statements)
 
 **Implemented Shapes (20/39):**
 

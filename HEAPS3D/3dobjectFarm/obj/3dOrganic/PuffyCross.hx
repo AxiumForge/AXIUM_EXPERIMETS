@@ -16,3 +16,23 @@ class PuffyCross {
     return d + wobble;
   }
 }
+
+class PuffyCrossShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var radius = 0.3;
+      var soft = 0.1;
+
+      var dx = length(vec2(pr.y, pr.z)) - radius;
+      var dy = length(vec2(pr.x, pr.z)) - radius;
+      var dz = length(vec2(pr.x, pr.y)) - radius;
+      var d = min(dx, min(dy, dz));
+      var wobble = sin((pr.x + pr.y + pr.z) * 2.0) * soft;
+      var dist = d + wobble;
+
+      var col = vec3(0.6, 0.85, 0.95);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

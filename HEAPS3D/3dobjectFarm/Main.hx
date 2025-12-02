@@ -58,7 +58,7 @@ class Main extends App {
 
   var currentShape : Int = 0;
   var shapeNames : Array<String>;
-  var shapeCategories : Array<{name:String, shapes:Array<String>}>;
+  var shapeCategories : Array<{name:String, shapes:Array<String>, package:String}>;
   var uiPanel : Object;
   var scrollContainer : Object;
   var scrollOffset : Float = 0;
@@ -111,11 +111,11 @@ class Main extends App {
 
   function useDefaultShapes() {
     shapeCategories = [
-      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"]},
-      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"]},
-      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"]},
-      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"]},
-      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"]}
+      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], package: "obj.primitives"},
+      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], package: "obj.primitives2d"},
+      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], package: "obj.derivates"},
+      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], package: "obj._2DOrganics"},
+      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], package: "obj._3dOrganic"}
     ];
 
     shapeNames = [];
@@ -288,29 +288,28 @@ class Main extends App {
   }
 
   function createShaderForShape(name:String):BaseRaymarchShader {
-    return switch(name) {
-      case "Box": new BoxShader();
-      case "Sphere": new SphereShader();
-      case "Capsule": new CapsuleShader();
-      case "Cone": new ConeShader();
-      case "Cylinder": new CylinderShader();
-      case "Ellipsoid": new EllipsoidShader();
-      case "Plane": new PlaneShader();
-      case "Pyramid": new PyramidShader();
-      case "Torus": new TorusShader();
-      case "Box2D": new Box2DShader();
-      case "Circle": new CircleShader();
-      case "Heart": new HeartShader();
-      case "RoundedBox2D": new RoundedBox2DShader();
-      case "Star": new StarShader();
-      case "HalfCapsule": new HalfCapsuleShader();
-      case "HoledPlane": new HoledPlaneShader();
-      case "HollowBox": new HollowBoxShader();
-      case "HollowSphere": new HollowSphereShader();
-      case "QuarterTorus": new QuarterTorusShader();
-      case "ShellCylinder": new ShellCylinderShader();
-      default: new SphereShader(); // fallback
-    };
+    // Find which category this shape belongs to
+    for (cat in shapeCategories) {
+      for (shapeName in cat.shapes) {
+        if (shapeName == name) {
+          // Build fully qualified class name: package.ShapeNameShader
+          var className = cat.package + "." + name + "Shader";
+          var cls = Type.resolveClass(className);
+
+          if (cls != null) {
+            var instance = Type.createInstance(cls, []);
+            trace("Created shader: " + className);
+            return cast instance;
+          } else {
+            trace("ERROR: Could not resolve shader class: " + className);
+          }
+        }
+      }
+    }
+
+    // Fallback to Sphere if not found
+    trace("WARNING: Shape '" + name + "' not found, using SphereShader as fallback");
+    return new SphereShader();
   }
 
   function selectShape(index:Int) {
@@ -322,8 +321,16 @@ class Main extends App {
     shader.time = t;
     shader.resolution.set(viewportWidth, viewportHeight);
 
-    // Update fx with new shader
-    fx.shader = shader;
+    // Update camera uniforms
+    var cam = computeCamera(t);
+    shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
+    shader.cameraForward.set(cam.forward.x, cam.forward.y, cam.forward.z);
+    shader.cameraRight.set(cam.right.x, cam.right.y, cam.right.z);
+    shader.cameraUp.set(cam.up.x, cam.up.y, cam.up.z);
+
+    // Recreate ScreenFx with new shader
+    fx.dispose();
+    fx = new ScreenFx(shader);
 
     trace("Selected shape: " + shapeNames[currentShape]);
   }

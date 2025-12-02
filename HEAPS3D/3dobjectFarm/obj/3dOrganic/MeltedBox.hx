@@ -21,3 +21,21 @@ class MeltedBox {
     return base + blob;
   }
 }
+
+class MeltedBoxShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var halfExtents = vec3(0.6, 0.4, 0.5);
+      var melt = 0.18;
+
+      var q = abs(pr) - halfExtents;
+      var base = length(max(q, vec3(0.0, 0.0, 0.0))) + min(max(q.x, max(q.y, q.z)), 0.0);
+      var blob = sin((pr.x + pr.y + pr.z) * 1.6) * melt;
+      var dist = base + blob;
+
+      var col = vec3(0.7, 0.4, 0.3);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
+}

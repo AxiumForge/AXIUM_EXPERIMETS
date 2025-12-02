@@ -50,6 +50,8 @@ class Main extends App {
   var currentSequenceFrame : Int = 0;
   var sequenceDir : String = "";
   var sequenceNumber : Int = 1;
+  var timeBetweenFrames : Float = 1.0; // 1 second between frames = 20 second animation
+  var timeOfLastFrame : Float = 0;
 
   // Viewport dimensions
   var viewportWidth : Int = 0;
@@ -221,34 +223,42 @@ class Main extends App {
 
     // Handle frame sequence mode
     if (sequenceMode && currentSequenceFrame < sequenceFrameCount) {
-      // Render full frame with UI to screenshot texture
-      if (screenshotTexture == null || screenshotTexture.width != e.width || screenshotTexture.height != e.height) {
-        if (screenshotTexture != null) screenshotTexture.dispose();
-        screenshotTexture = new Texture(e.width, e.height, [Target]);
+      // Check if enough time has passed since last frame
+      var timeSinceLastFrame = t - timeOfLastFrame;
+      var shouldCaptureFrame = (currentSequenceFrame == 0) || (timeSinceLastFrame >= timeBetweenFrames);
+
+      if (shouldCaptureFrame) {
+        // Render full frame with UI to screenshot texture
+        if (screenshotTexture == null || screenshotTexture.width != e.width || screenshotTexture.height != e.height) {
+          if (screenshotTexture != null) screenshotTexture.dispose();
+          screenshotTexture = new Texture(e.width, e.height, [Target]);
+        }
+
+        e.pushTarget(screenshotTexture);
+        e.clear(0x000000);
+        copy.apply(viewportTexture, null);
+        s2d.render(e);
+        e.popTarget();
+
+        // Save frame using Screenshot.saveSequenceFrame()
+        var savedPath = Screenshot.saveSequenceFrame(screenshotTexture, sequenceDir, currentSequenceFrame + 1, "frame_");
+        trace("Saved frame " + (currentSequenceFrame + 1) + "/" + sequenceFrameCount + " at t=" + Math.round(t * 10) / 10 + "s");
+
+        currentSequenceFrame++;
+        timeOfLastFrame = t;
+
+        // Exit when sequence complete
+        if (currentSequenceFrame >= sequenceFrameCount) {
+          trace("Frame sequence complete! Saved to: " + sequenceDir);
+          trace("Total duration: " + Math.round(t * 10) / 10 + " seconds");
+          Sys.exit(0);
+        }
+
+        // Display to screen
+        e.clear(0x000000);
+        copy.apply(screenshotTexture, null);
+        return;
       }
-
-      e.pushTarget(screenshotTexture);
-      e.clear(0x000000);
-      copy.apply(viewportTexture, null);
-      s2d.render(e);
-      e.popTarget();
-
-      // Save frame using Screenshot.saveSequenceFrame()
-      var savedPath = Screenshot.saveSequenceFrame(screenshotTexture, sequenceDir, currentSequenceFrame + 1, "frame_");
-      trace("Saved frame " + (currentSequenceFrame + 1) + "/" + sequenceFrameCount);
-
-      currentSequenceFrame++;
-
-      // Exit when sequence complete
-      if (currentSequenceFrame >= sequenceFrameCount) {
-        trace("Frame sequence complete! Saved to: " + sequenceDir);
-        Sys.exit(0);
-      }
-
-      // Display to screen
-      e.clear(0x000000);
-      copy.apply(screenshotTexture, null);
-      return;
     }
 
     // Handle frame delay before screenshot

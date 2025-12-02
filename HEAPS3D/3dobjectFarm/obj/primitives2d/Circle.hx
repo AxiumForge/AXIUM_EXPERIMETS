@@ -31,21 +31,40 @@ class CircleShader extends BaseRaymarchShader {
       // Color based on 2D pattern
       var col = vec3(0.3, 0.3, 0.3); // Default box surface color (gray)
 
-      // Only on front face (z ≈ boxHalf.z) - larger epsilon to catch raymarch samples
+      // Project onto face coordinate system (XY on the face)
+      var dx = local.x;
+      var dy = local.y;
+      var dist2D = sqrt(dx * dx + dy * dy);
+
+      // Front face (z ≈ boxHalf.z)
       var onFrontFace = abs(local.z - boxHalf.z) < 0.05;
 
-      if (onFrontFace) {
-        // Project onto face coordinate system (XY on the face)
-        var dx = local.x;
-        var dy = local.y;
+      // Back face (z ≈ -boxHalf.z)
+      var onBackFace = abs(local.z + boxHalf.z) < 0.05;
 
-        // 2D Circle SDF on the face itself
+      if (onFrontFace) {
+        // Single cyan circle on front
         var radius = 0.8;
-        var circle2D = sqrt(dx * dx + dy * dy) - radius;
+        var circle2D = dist2D - radius;
 
         if (circle2D < 0.0) {
-          // Inside 2D circle on box surface - use circle color
           col = vec3(0.2, 0.8, 0.9); // Cyan circle
+        }
+      }
+      else if (onBackFace) {
+        // 3 concentric circles on back - check from largest to smallest
+        var radius1 = 0.8; // Outermost
+        var radius2 = 0.55; // Middle
+        var radius3 = 0.3; // Innermost
+
+        if (dist2D < radius1) {
+          col = vec3(0.9, 0.3, 0.3); // Red outer ring
+        }
+        if (dist2D < radius2) {
+          col = vec3(0.3, 0.9, 0.3); // Green middle ring
+        }
+        if (dist2D < radius3) {
+          col = vec3(0.3, 0.3, 0.9); // Blue center circle
         }
       }
 

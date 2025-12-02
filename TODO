@@ -19,7 +19,7 @@
 - [x] UI panel med shape kategorier og scroll
 
 #### Mangler �
-- [ ] Gør det muligt at bruge --sc med en form --torus --2dbox så du kan se alle former der er i et screenshot - sørg for at --form ikke er hardcoded men et system der automatisk tilføjer ved nye forme.
+- [x] Gør det muligt at bruge --sc med en form --torus --2dbox så du kan se alle former der er i et screenshot - sørg for at --form ikke er hardcoded men et system der automatisk tilføjer ved nye forme.
 - [ ] Konverter resterende 19 shapes til module pattern:
   - [ ] 2D Organics (7): FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
   - [ ] 3D Organic (12): BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
@@ -85,4 +85,5 @@
 ## Noter
 - Husk at opdatere CHANGELOG undervejs
 - HUSK at alle opslag skal refereres med link i RAG
+- Commit og Push efter hver færdige opgave blok
 - Vi taler dansk til hinanden - al tekst i projekt/repo og al kode er engelsk baseret

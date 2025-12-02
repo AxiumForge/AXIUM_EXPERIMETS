@@ -58,7 +58,7 @@ class Main extends App {
 
   var currentShape : Int = 0;
   var shapeNames : Array<String>;
-  var shapeCategories : Array<{name:String, shapes:Array<String>, package:String}>;
+  var shapeCategories : Array<{name:String, shapes:Array<String>, pkg:String}>;
   var uiPanel : Object;
   var scrollContainer : Object;
   var scrollOffset : Float = 0;
@@ -68,12 +68,18 @@ class Main extends App {
   var panelX : Float = 0;
   var viewportWidth : Int = 0;
   var viewportHeight : Int = 0;
+  var shapesToScreenshot : Array<String> = [];
+  var currentScreenshotIndex : Int = 0;
+  var framesBeforeScreenshot : Int = 0;
 
   static function main() {
     new Main();
   }
 
   override function init() {
+    // Scan shapes first so we can parse shape-specific args
+    scanShapesFromFolder();
+
     shader = createShaderForShape("Box"); // Start with Box
     fx = new ScreenFx(shader);
     copy = new Copy();
@@ -86,12 +92,50 @@ class Main extends App {
     trace("Program path: " + Sys.programPath());
     trace("Screenshot directory: " + screenshotDir);
 
+    // Parse command line args
+    var screenshotMode = false;
+    var requestedShapes : Array<String> = [];
+
     for (arg in Sys.args()) {
       if (arg == "--sc") {
-        pendingScreenshot = true;
-        autoScreenshot = true;
+        screenshotMode = true;
         trace("Auto-screenshot enabled via --sc flag");
+      } else if (StringTools.startsWith(arg, "--")) {
+        // Check if this arg matches any shape name (case-insensitive)
+        var shapeName = arg.substring(2); // Remove "--" prefix
+        for (name in shapeNames) {
+          if (name.toLowerCase() == shapeName.toLowerCase()) {
+            requestedShapes.push(name);
+            trace("Found shape flag: " + name);
+            break;
+          }
+        }
       }
+    }
+
+    // If --sc is set with shape flags, prepare screenshot sequence
+    if (screenshotMode && requestedShapes.length > 0) {
+      shapesToScreenshot = requestedShapes;
+      currentScreenshotIndex = 0;
+      autoScreenshot = true;
+
+      // Switch to first requested shape
+      var firstShapeIndex = shapeNames.indexOf(shapesToScreenshot[0]);
+      if (firstShapeIndex >= 0) {
+        currentShape = firstShapeIndex;
+        shader = createShaderForShape(shapeNames[currentShape]);
+        fx.dispose();
+        fx = new ScreenFx(shader);
+      }
+
+      pendingScreenshot = true;
+      framesBeforeScreenshot = 3; // Wait a few frames for shader to settle
+      trace("Screenshot sequence: " + shapesToScreenshot.join(", "));
+    } else if (screenshotMode) {
+      // Just --sc without shapes: screenshot current shape
+      pendingScreenshot = true;
+      framesBeforeScreenshot = 3;
+      autoScreenshot = true;
     }
   }
 
@@ -111,11 +155,11 @@ class Main extends App {
 
   function useDefaultShapes() {
     shapeCategories = [
-      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], package: "obj.primitives"},
-      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], package: "obj.primitives2d"},
-      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], package: "obj.derivates"},
-      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], package: "obj._2DOrganics"},
-      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], package: "obj._3dOrganic"}
+      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], pkg: "obj.primitives"},
+      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], pkg: "obj.primitives2d"},
+      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], pkg: "obj.derivates"},
+      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], pkg: "obj._2DOrganics"},
+      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], pkg: "obj._3dOrganic"}
     ];
 
     shapeNames = [];
@@ -292,8 +336,8 @@ class Main extends App {
     for (cat in shapeCategories) {
       for (shapeName in cat.shapes) {
         if (shapeName == name) {
-          // Build fully qualified class name: package.ShapeNameShader
-          var className = cat.package + "." + name + "Shader";
+          // Build fully qualified class name: pkg.ShapeNameShader
+          var className = cat.pkg + "." + name + "Shader";
           var cls = Type.resolveClass(className);
 
           if (cls != null) {
@@ -373,6 +417,20 @@ class Main extends App {
     e.clear(0x000000);
     fx.render();
     e.popTarget();
+
+    // Handle frame delay before screenshot
+    if (pendingScreenshot && framesBeforeScreenshot > 0) {
+      framesBeforeScreenshot--;
+      if (framesBeforeScreenshot == 0) {
+        // Ready to capture now
+      } else {
+        // Still waiting, just render normally
+        e.clear(0x000000);
+        copy.apply(viewportTexture, null);
+        s2d.render(e);
+        return;
+      }
+    }
 
     if (pendingScreenshot) {
       // For screenshot: render everything to full texture
@@ -483,15 +541,51 @@ class Main extends App {
       var pix = screenshotTexture.capturePixels();
       pix.convert(PixelFormat.RGBA);
 
-      var stamp = Std.int(t * 1000);
-      var fileName = "shot_" + stamp + ".png";
+      // Generate filename based on shape name if in sequence mode
+      var fileName : String;
+      if (shapesToScreenshot.length > 0 && currentScreenshotIndex < shapesToScreenshot.length) {
+        var shapeName = shapesToScreenshot[currentScreenshotIndex];
+        fileName = shapeName + ".png";
+      } else {
+        var stamp = Std.int(t * 1000);
+        fileName = "shot_" + stamp + ".png";
+      }
+
       var fullPath = Path.join([screenshotDir, fileName]);
 
       trace("Saving screenshot to: " + fullPath);
       File.saveBytes(fullPath, pix.toPNG());
       trace("Screenshot saved successfully!");
 
-      if (autoScreenshot) Sys.exit(0);
+      // Handle screenshot sequence
+      if (shapesToScreenshot.length > 0) {
+        currentScreenshotIndex++;
+
+        if (currentScreenshotIndex < shapesToScreenshot.length) {
+          // Move to next shape in sequence
+          var nextShapeName = shapesToScreenshot[currentScreenshotIndex];
+          var nextShapeIndex = shapeNames.indexOf(nextShapeName);
+
+          if (nextShapeIndex >= 0) {
+            trace("Moving to next shape: " + nextShapeName);
+            currentShape = nextShapeIndex;
+            shader = createShaderForShape(shapeNames[currentShape]);
+            fx.dispose();
+            fx = new ScreenFx(shader);
+
+            // Queue next screenshot (will happen after a few frames to let shader settle)
+            pendingScreenshot = true;
+            framesBeforeScreenshot = 3;
+          }
+        } else {
+          // Sequence complete
+          trace("Screenshot sequence complete!");
+          if (autoScreenshot) Sys.exit(0);
+        }
+      } else if (autoScreenshot) {
+        // Single screenshot mode
+        Sys.exit(0);
+      }
     } catch (e:Dynamic) {
       trace("ERROR capturing screenshot: " + e);
     }

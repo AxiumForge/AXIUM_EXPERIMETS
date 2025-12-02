@@ -17,15 +17,15 @@ class Circle {
 class CircleShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateY(p, time * 0.7);
+      // No rotation - 2D shape static in XZ plane (like flat paper)
 
-      // 2D Circle in XZ plane - simple max() intersection with thin plane
-      var radius = 0.8; // Larger radius
-      var shape2D = length(vec2(pr.x, pr.z)) - radius;
+      // 2D Circle in XZ plane
+      var radius = 0.8;
+      var shape2D = length(vec2(p.x, p.z)) - radius;
 
-      // Thin plane in Y
-      var thickness = 0.2; // Much thicker for visibility
-      var planeY = abs(pr.y) - thickness;
+      // Thin plane in Y (paper-like but visible)
+      var thickness = 0.1;
+      var planeY = abs(p.y) - thickness;
 
       // Intersection: both must be negative (inside both shapes)
       var dist = max(shape2D, planeY);

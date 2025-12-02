@@ -19,6 +19,7 @@ import Sys;
 import sys.io.File;
 import sys.FileSystem;
 import haxe.io.Path;
+import StringTools;
 
 class Main extends App {
 
@@ -78,6 +79,29 @@ class Main extends App {
     if (s2d != null) {
       panelX = s2d.width - panelWidth;
       if (uiPanel != null) initUI();
+    }
+  }
+
+  function scanShapesFromFolder() {
+    // All shapes hardcoded at compile time from obj/ folder
+    useDefaultShapes();
+    trace("Loaded " + shapeNames.length + " shapes in " + shapeCategories.length + " categories");
+  }
+
+  function useDefaultShapes() {
+    shapeCategories = [
+      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"]},
+      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"]},
+      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"]},
+      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"]},
+      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"]}
+    ];
+
+    shapeNames = [];
+    for (cat in shapeCategories) {
+      for (shape in cat.shapes) {
+        shapeNames.push(shape);
+      }
     }
   }
 
@@ -228,13 +252,14 @@ class Main extends App {
   }
 
   function refreshShapeButtons() {
+    var btnWidth = panelWidth - 30;
     for (i in 0...shapeButtons.length) {
       var btn = shapeButtons[i];
       var isSelected = i == currentShape;
 
       btn.bg.clear();
       btn.bg.beginFill(isSelected ? 0x444444 : 0x2a2a2a);
-      btn.bg.drawRoundedRect(0, 0, 220, 45, 5);
+      btn.bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
       btn.bg.endFill();
 
       btn.label.textColor = isSelected ? 0xFFFF00 : 0xCCCCCC;

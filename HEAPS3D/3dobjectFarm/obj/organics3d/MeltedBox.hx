@@ -1,10 +1,10 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class MeltedBox {
-  public static inline var color = new Vector(0.7, 0.4, 0.3);
-  public static inline var halfExtents = new Vector(0.6, 0.4, 0.5);
+  public static var color = new Vector(0.7, 0.4, 0.3);
+  public static var halfExtents = new Vector(0.6, 0.4, 0.5);
   public static inline var melt = 0.18;
 
   public static inline function distance(p:Vector):Float {

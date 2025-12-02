@@ -1,9 +1,9 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class DripCone {
-  public static inline var color = new Vector(0.85, 0.55, 0.4);
+  public static var color = new Vector(0.85, 0.55, 0.4);
   public static inline var height = 1.1;
   public static inline var radius = 0.7;
   public static inline var dripRadius = 0.2;

@@ -1,13 +1,13 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class BulbTreeCrown {
-  public static inline var color = new Vector(0.45, 0.85, 0.35);
+  public static var color = new Vector(0.45, 0.85, 0.35);
   public static inline var trunkHeight = 0.4;
   public static inline var trunkRadius = 0.15;
   public static inline var bulbRadius = 0.55;
-  public static inline var center = new Vector(0.0, -0.2, -1.0);
+  public static var center = new Vector(0.0, -0.2, -1.0);
 
   public static inline function distance(p:Vector):Float {
     // trunk cylinder

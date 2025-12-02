@@ -21,7 +21,7 @@ class Box2D {
 class Box2DShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var halfExtents = vec2(0.7, 0.45);
       var q = vec2(abs(pr.x) - halfExtents.x, abs(pr.z) - halfExtents.y);
       var outside = length(max(q, vec2(0.0, 0.0)));

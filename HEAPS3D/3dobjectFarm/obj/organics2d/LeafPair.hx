@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class LeafPair {
-  public static inline var color = new Vector(0.3, 0.9, 0.5);
+  public static var color = new Vector(0.3, 0.9, 0.5);
   public static inline var length = 0.8;
   public static inline var width = 0.35;
   public static inline var gap = 0.1;
@@ -32,7 +32,7 @@ class LeafPairShader extends BaseRaymarchShader {
     }
 
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var leafWidth = 0.35;
       var leafLength = 0.8;
       var gap = 0.1;

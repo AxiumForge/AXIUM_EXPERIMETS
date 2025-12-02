@@ -20,7 +20,7 @@ class RoundedBox2D {
 class RoundedBox2DShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var halfExtents = vec2(0.8, 0.5);
       var radius = 0.15;
       var q = vec2(abs(pr.x) - (halfExtents.x - radius), abs(pr.z) - (halfExtents.y - radius));

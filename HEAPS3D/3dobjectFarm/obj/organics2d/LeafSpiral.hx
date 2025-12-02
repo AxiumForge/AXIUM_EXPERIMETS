@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class LeafSpiral {
-  public static inline var color = new Vector(0.35, 0.9, 0.55);
+  public static var color = new Vector(0.35, 0.9, 0.55);
   public static inline var turns = 2.5;
   public static inline var width = 0.18;
 
@@ -20,7 +20,7 @@ class LeafSpiral {
 class LeafSpiralShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var turns = 2.5;
       var width = 0.18;
       var ang = atan(pr.z / pr.x);

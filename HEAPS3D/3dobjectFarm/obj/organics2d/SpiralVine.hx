@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class SpiralVine {
-  public static inline var color = new Vector(0.25, 0.8, 0.55);
+  public static var color = new Vector(0.25, 0.8, 0.55);
   public static inline var turns = 3.0;
   public static inline var thickness = 0.12;
 
@@ -19,7 +19,7 @@ class SpiralVine {
 class SpiralVineShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var turns = 3.0;
       var thickness = 0.12;
       var angle = atan(pr.z / pr.x);

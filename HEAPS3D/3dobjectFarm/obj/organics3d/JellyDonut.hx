@@ -1,9 +1,9 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class JellyDonut {
-  public static inline var color = new Vector(0.95, 0.3, 0.55);
+  public static var color = new Vector(0.95, 0.3, 0.55);
   public static inline var major = 0.9;
   public static inline var minor = 0.28;
   public static inline var jelly = 0.12;

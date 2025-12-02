@@ -17,7 +17,7 @@ class Heart {
 class HeartShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var scale = 1.0;
       var x = pr.x * scale;
       var y = pr.z * scale;

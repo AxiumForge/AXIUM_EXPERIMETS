@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class VineCurl {
-  public static inline var color = new Vector(0.2, 0.75, 0.45);
+  public static var color = new Vector(0.2, 0.75, 0.45);
   public static inline var thickness = 0.1;
 
   public static inline function distance(p:Vector):Float {
@@ -17,7 +17,7 @@ class VineCurl {
 class VineCurlShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var thickness = 0.1;
       var r = length(pr.xz);
       var a = atan(pr.z / pr.x);

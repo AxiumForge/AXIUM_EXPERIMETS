@@ -42,6 +42,25 @@ import obj.derivates.HollowBox;
 import obj.derivates.HollowSphere;
 import obj.derivates.QuarterTorus;
 import obj.derivates.ShellCylinder;
+import obj.organics2d.FlowerPetalRing;
+import obj.organics2d.LeafPair;
+import obj.organics2d.LeafSpiral;
+import obj.organics2d.LotusFringe;
+import obj.organics2d.OrnateKnot;
+import obj.organics2d.SpiralVine;
+import obj.organics2d.VineCurl;
+import obj.organics3d.BlobbyCluster;
+import obj.organics3d.BubbleCrown;
+import obj.organics3d.BulbTreeCrown;
+import obj.organics3d.DripCone;
+import obj.organics3d.JellyDonut;
+import obj.organics3d.KnotTube;
+import obj.organics3d.MeltedBox;
+import obj.organics3d.PuffyCross;
+import obj.organics3d.RibbonTwist;
+import obj.organics3d.SoftSphereWrap;
+import obj.organics3d.UndulatingPlane;
+import obj.organics3d.WavyCapsule;
 
 class Main extends App {
 
@@ -158,8 +177,8 @@ class Main extends App {
       {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], pkg: "obj.primitives"},
       {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], pkg: "obj.primitives2d"},
       {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], pkg: "obj.derivates"},
-      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], pkg: "obj._2DOrganics"},
-      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], pkg: "obj._3dOrganic"}
+      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], pkg: "obj.organics2d"},
+      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], pkg: "obj.organics3d"}
     ];
 
     shapeNames = [];

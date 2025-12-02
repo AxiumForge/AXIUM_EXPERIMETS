@@ -25,6 +25,12 @@ class BaseRaymarchShader extends ScreenShader {
       return rx;
     }
 
+    function rotateY(p:Vec3, angle:Float):Vec3 {
+      var c = cos(angle);
+      var s = sin(angle);
+      return vec3(p.x * c + p.z * s, p.y, -p.x * s + p.z * c);
+    }
+
     // Override this in shape-specific shaders
     // Returns vec4(distance, color.rgb)
     function map(p:Vec3):Vec4 {

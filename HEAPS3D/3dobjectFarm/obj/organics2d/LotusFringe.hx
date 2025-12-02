@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class LotusFringe {
-  public static inline var color = new Vector(0.85, 0.75, 0.3);
+  public static var color = new Vector(0.85, 0.75, 0.3);
   public static inline var petals = 12;
   public static inline var baseR = 0.3;
   public static inline var tipR = 0.7;
@@ -22,7 +22,7 @@ class LotusFringe {
 class LotusFringeShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var petals = 12.0;
       var baseR = 0.3;
       var tipR = 0.7;

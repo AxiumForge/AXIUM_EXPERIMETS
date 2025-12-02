@@ -1,9 +1,9 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class BubbleCrown {
-  public static inline var color = new Vector(0.7, 0.95, 0.9);
+  public static var color = new Vector(0.7, 0.95, 0.9);
   public static inline var baseRadius = 0.4;
   public static inline var lift = 0.5;
 

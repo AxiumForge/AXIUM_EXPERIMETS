@@ -1,9 +1,9 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class KnotTube {
-  public static inline var color = new Vector(0.9, 0.65, 0.3);
+  public static var color = new Vector(0.9, 0.65, 0.3);
   public static inline var radius = 0.18;
   public static inline var major = 0.9;
   public static inline var twist = 2.5;

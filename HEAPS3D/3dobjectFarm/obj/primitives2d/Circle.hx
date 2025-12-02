@@ -17,7 +17,7 @@ class Circle {
 class CircleShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var radius = 0.6;
       var dist = length(vec2(pr.x, pr.z)) - radius;
       var col = vec3(0.2, 0.8, 0.9);

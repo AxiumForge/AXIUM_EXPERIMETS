@@ -1,10 +1,10 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class UndulatingPlane {
-  public static inline var color = new Vector(0.8, 0.9, 0.95);
-  public static inline var normal = new Vector(0, 1, 0);
+  public static var color = new Vector(0.8, 0.9, 0.95);
+  public static var normal = new Vector(0, 1, 0);
   public static inline var offset = -1.0;
   public static inline var amp = 0.25;
   public static inline var freq = 1.2;

@@ -1,11 +1,11 @@
-package obj._3dOrganic;
+package obj.organics3d;
 
 import h3d.Vector;
 
 class WavyCapsule {
-  public static inline var color = new Vector(0.95, 0.5, 0.35);
-  public static inline var a = new Vector(-0.6, -0.5, 0.8);
-  public static inline var b = new Vector(0.6, 0.6, 0.8);
+  public static var color = new Vector(0.95, 0.5, 0.35);
+  public static var a = new Vector(-0.6, -0.5, 0.8);
+  public static var b = new Vector(0.6, 0.6, 0.8);
   public static inline var radius = 0.25;
   public static inline var amp = 0.08;
   public static inline var freq = 4.0;

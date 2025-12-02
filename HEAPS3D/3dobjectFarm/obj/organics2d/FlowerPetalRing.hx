@@ -1,9 +1,9 @@
-package obj._2DOrganics;
+package obj.organics2d;
 
 import h3d.Vector;
 
 class FlowerPetalRing {
-  public static inline var color = new Vector(0.9, 0.5, 0.75);
+  public static var color = new Vector(0.9, 0.5, 0.75);
   public static inline var petals = 8;
   public static inline var inner = 0.2;
   public static inline var outer = 0.6;
@@ -21,7 +21,7 @@ class FlowerPetalRing {
 class FlowerPetalRingShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var pr = rotateY(p, time * 0.7);
       var petals = 8.0;
       var inner = 0.2;
       var outer = 0.6;

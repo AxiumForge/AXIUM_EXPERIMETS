@@ -8,6 +8,7 @@ import h2d.Text;
 import h2d.Interactive;
 import h2d.Graphics;
 import h2d.Object;
+import h2d.Mask;
 import hxd.App;
 import hxd.Event;
 import hxd.Window;
@@ -23,7 +24,8 @@ class Main extends App {
 
   var fx : ScreenFx<SDFObjectFarmShader>;
   var shader : SDFObjectFarmShader;
-  var renderTarget : Texture;
+  var viewportTexture : Texture;
+  var screenshotTexture : Texture;
   var copy : Copy;
   var t : Float = 0.0;
   var distance : Float = 5.0;
@@ -33,6 +35,7 @@ class Main extends App {
 
   var currentShape : Int = 0;
   var shapeNames : Array<String>;
+  var shapeCategories : Array<{name:String, shapes:Array<String>}>;
   var uiPanel : Object;
   var scrollContainer : Object;
   var scrollOffset : Float = 0;
@@ -40,6 +43,8 @@ class Main extends App {
   var shapeButtons : Array<{bg:Graphics, label:Text, interactive:Interactive}>;
   var panelWidth : Int = 250;
   var panelX : Float = 0;
+  var viewportWidth : Int = 0;
+  var viewportHeight : Int = 0;
 
   static function main() {
     new Main();
@@ -83,11 +88,8 @@ class Main extends App {
       shapeButtons = [];
     }
 
-    shapeNames = [
-      "Sphere", "Box", "Capsule", "Torus", "Cone",
-      "Cylinder", "Ellipsoid", "Pyramid", "Plane",
-      "HollowSphere", "HollowBox", "ShellCylinder"
-    ];
+    // Scan obj/ folder for shapes
+    scanShapesFromFolder();
 
     var font = hxd.res.DefaultFont.get();
     var panelHeight = Std.int(s2d.height);
@@ -113,57 +115,76 @@ class Main extends App {
     title.x = panelX + 15;
     title.y = 18;
 
-    // Scrollable shape list container
+    // Scrollable shape list container with masking
     var scrollAreaHeight = panelHeight - 230; // Leave space for title and help
-    scrollContainer = new Object(s2d);
-    scrollContainer.x = panelX;
-    scrollContainer.y = 70;
+    var scrollMask = new Mask(panelWidth - 20, scrollAreaHeight, s2d);
+    scrollMask.x = panelX + 10;
+    scrollMask.y = 70;
+
+    scrollContainer = new Object(scrollMask);
+    scrollContainer.x = 0;
+    scrollContainer.y = 0;
 
     shapeButtons = [];
     var btnWidth = panelWidth - 30;
     var yPos = 0.0;
+    var shapeIndex = 0;
 
-    for (i in 0...shapeNames.length) {
-      var btn = new Object(scrollContainer);
-      btn.y = yPos;
-      btn.x = 15;
+    // Build shape list with category headers
+    for (category in shapeCategories) {
+      // Category header
+      var header = new Text(font, scrollContainer);
+      header.text = category.name.toUpperCase();
+      header.textColor = 0xFFFFFF;
+      header.scale(1.1);
+      header.x = 15;
+      header.y = yPos + 5;
+      yPos += 30;
 
-      var bg = new Graphics(btn);
-      bg.beginFill(i == currentShape ? 0x444444 : 0x2a2a2a);
-      bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-      bg.endFill();
+      // Category shapes
+      for (shapeName in category.shapes) {
+        var btn = new Object(scrollContainer);
+        btn.y = yPos;
+        btn.x = 15;
 
-      var label = new Text(font, btn);
-      label.text = shapeNames[i];
-      label.textColor = i == currentShape ? 0xFFFF00 : 0xCCCCCC;
-      label.scale(1.3);
-      label.x = 12;
-      label.y = 12;
-
-      var interactive = new Interactive(btnWidth, 45, btn);
-      interactive.backgroundColor = 0x555555;
-      interactive.alpha = 0;
-
-      final shapeIndex = i;
-      interactive.onClick = function(_) {
-        selectShape(shapeIndex);
-        refreshShapeButtons();
-      };
-      interactive.onOver = function(_) {
-        bg.clear();
-        bg.beginFill(0x555555);
-        bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-        bg.endFill();
-      };
-      interactive.onOut = function(_) {
-        bg.clear();
+        var bg = new Graphics(btn);
         bg.beginFill(shapeIndex == currentShape ? 0x444444 : 0x2a2a2a);
         bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
         bg.endFill();
-      };
 
-      shapeButtons.push({bg: bg, label: label, interactive: interactive});
-      yPos += 50;
+        var label = new Text(font, btn);
+        label.text = shapeName;
+        label.textColor = shapeIndex == currentShape ? 0xFFFF00 : 0xCCCCCC;
+        label.scale(1.3);
+        label.x = 12;
+        label.y = 12;
+
+        var interactive = new Interactive(btnWidth, 45, btn);
+        interactive.backgroundColor = 0x555555;
+        interactive.alpha = 0;
+
+        final btnIndex = shapeIndex;
+        interactive.onClick = function(_) {
+          selectShape(btnIndex);
+          refreshShapeButtons();
+        };
+        interactive.onOver = function(_) {
+          bg.clear();
+          bg.beginFill(0x555555);
+          bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
+          bg.endFill();
+        };
+        interactive.onOut = function(_) {
+          bg.clear();
+          bg.beginFill(btnIndex == currentShape ? 0x444444 : 0x2a2a2a);
+          bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
+          bg.endFill();
+        };
+
+        shapeButtons.push({bg: bg, label: label, interactive: interactive});
+        yPos += 50;
+        shapeIndex++;
+      }
     }
 
     var scrollAreaHeight = panelHeight - 230;
@@ -234,12 +255,19 @@ class Main extends App {
   override function render(e:h3d.Engine) {
     // Initialize UI on first render when we have proper dimensions
     if (uiPanel == null) {
-      panelX = e.width - panelWidth;
+      viewportWidth = e.width - panelWidth;
+      viewportHeight = e.height;
+      panelX = viewportWidth;
       initUI();
     }
 
+    // Update viewport dimensions
+    viewportWidth = e.width - panelWidth;
+    viewportHeight = e.height;
+    panelX = viewportWidth;
+
     shader.time = t;
-    shader.resolution.set(e.width, e.height);
+    shader.resolution.set(viewportWidth, viewportHeight); // 3D viewport only
 
     var cam = computeCamera(t);
     shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
@@ -247,29 +275,43 @@ class Main extends App {
     shader.cameraRight.set(cam.right.x, cam.right.y, cam.right.z);
     shader.cameraUp.set(cam.up.x, cam.up.y, cam.up.z);
 
+    // Render 3D to viewport texture
+    if (viewportTexture == null || viewportTexture.width != viewportWidth || viewportTexture.height != viewportHeight) {
+      if (viewportTexture != null) viewportTexture.dispose();
+      viewportTexture = new Texture(viewportWidth, viewportHeight, [Target]);
+    }
+
+    e.pushTarget(viewportTexture);
+    e.clear(0x000000);
+    fx.render();
+    e.popTarget();
+
     if (pendingScreenshot) {
-      // For screenshot: render everything to texture (3D + 2D), then capture
-      if (renderTarget == null || renderTarget.width != e.width || renderTarget.height != e.height) {
-        if (renderTarget != null) renderTarget.dispose();
-        renderTarget = new Texture(e.width, e.height, [Target]);
+      // For screenshot: render everything to full texture
+      if (screenshotTexture == null || screenshotTexture.width != e.width || screenshotTexture.height != e.height) {
+        if (screenshotTexture != null) screenshotTexture.dispose();
+        screenshotTexture = new Texture(e.width, e.height, [Target]);
       }
 
-      e.pushTarget(renderTarget);
+      e.pushTarget(screenshotTexture);
       e.clear(0x000000);
-      fx.render();
-      s2d.render(e); // Render UI into texture too
+
+      // Blit 3D viewport to left side
+      copy.apply(viewportTexture, null);
+
+      // Render UI panel
+      s2d.render(e);
       e.popTarget();
 
-      // Capture the full frame (3D + UI)
       captureScreenshot(e);
 
-      // Display on screen
+      // Display to screen
       e.clear(0x000000);
-      copy.apply(renderTarget, null);
+      copy.apply(screenshotTexture, null);
     } else {
-      // Normal render: 3D directly to screen, then 2D UI
+      // Normal render: Blit 3D viewport + render UI
       e.clear(0x000000);
-      fx.render();
+      copy.apply(viewportTexture, null);
       s2d.render(e);
     }
   }
@@ -326,10 +368,10 @@ class Main extends App {
       case EWheel:
         // Check if mouse is over UI panel
         var mouseX = s2d.mouseX;
-        if (mouseX > s2d.width - 250) {
+        if (mouseX > panelX) {
           // Scroll panel
           scrollOffset = clamp(scrollOffset - e.wheelDelta * 30, 0, maxScroll);
-          scrollContainer.y = 70 - scrollOffset;
+          scrollContainer.y = -scrollOffset;
         } else {
           // Zoom camera
           var zoomFactor = Math.pow(0.9, e.wheelDelta);
@@ -349,8 +391,8 @@ class Main extends App {
         FileSystem.createDirectory(screenshotDir);
       }
 
-      // Capture pixels from render target texture instead of main buffer
-      var pix = renderTarget.capturePixels();
+      // Capture pixels from screenshot texture (full frame with UI)
+      var pix = screenshotTexture.capturePixels();
       pix.convert(PixelFormat.RGBA);
 
       var stamp = Std.int(t * 1000);

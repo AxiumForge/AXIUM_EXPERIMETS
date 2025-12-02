@@ -17,21 +17,28 @@ class Circle {
 class CircleShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {
-      // No rotation - 2D shape static in XZ plane (like flat paper)
+      // 3D box (thin card/panel) - this is the surface
+      var boxSize = vec3(2.0, 2.0, 0.08);
+      var dx = abs(p.x) - boxSize.x;
+      var dy = abs(p.y) - boxSize.y;
+      var dz = abs(p.z) - boxSize.z;
+      var box3D = max(max(dx, dy), dz);
 
-      // 2D Circle in XZ plane
+      // 2D Circle - defines the cutout/pattern on the box surface (z=0 plane)
       var radius = 0.8;
-      var shape2D = length(vec2(p.x, p.z)) - radius;
+      var circle2D = length(vec2(p.x, p.y)) - radius;
 
-      // Thin plane in Y (paper-like but visible)
-      var thickness = 0.1;
-      var planeY = abs(p.y) - thickness;
+      // Color based on 2D pattern
+      var col = vec3(0.3, 0.3, 0.3); // Default box surface color (gray)
 
-      // Intersection: both must be negative (inside both shapes)
-      var dist = max(shape2D, planeY);
+      // Only show circle on front face (positive Z side facing camera)
+      if (p.z > 0.0 && circle2D < 0.0) {
+        // Inside 2D circle cutout on front face - use circle color
+        col = vec3(0.2, 0.8, 0.9); // Cyan circle
+      }
 
-      var col = vec3(0.2, 0.8, 0.9);
-      return vec4(dist, col.x, col.y, col.z);
+      // Raymarch the 3D box, colored by 2D pattern
+      return vec4(box3D, col.x, col.y, col.z);
     }
   };
 }

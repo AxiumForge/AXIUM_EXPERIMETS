@@ -1,6 +1,7 @@
 package;
 
 import haxe.ds.ReadOnlyArray;
+import Shapes; // Barrel import - required for Type.resolveClass() to find shader classes
 
 typedef ShapeCategory = {
   name:String,

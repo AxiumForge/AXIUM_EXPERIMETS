@@ -9,6 +9,7 @@ import h2d.Scene;
 import hxd.Event;
 import hxd.Key;
 import ShapeCatalog.ShapeCategory;
+import Shapes; // Barrel import - ensures all shapes available
 
 /**
   Side panel UI for shape selection.

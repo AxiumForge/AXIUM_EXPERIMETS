@@ -13,47 +13,7 @@ import StringTools;
 
 // Module imports
 import ShapeCatalog.ShapeCategory; // typedef from ShapeCatalog
-
-// Shape shader imports - still needed for Type.resolveClass to work
-import obj.primitives.Box;
-import obj.primitives.Sphere;
-import obj.primitives.Capsule;
-import obj.primitives.Cone;
-import obj.primitives.Cylinder;
-import obj.primitives.Ellipsoid;
-import obj.primitives.Plane;
-import obj.primitives.Pyramid;
-import obj.primitives.Torus;
-import obj.primitives2d.Box2D;
-import obj.primitives2d.Circle;
-import obj.primitives2d.Heart;
-import obj.primitives2d.RoundedBox2D;
-import obj.primitives2d.Star;
-import obj.derivates.HalfCapsule;
-import obj.derivates.HoledPlane;
-import obj.derivates.HollowBox;
-import obj.derivates.HollowSphere;
-import obj.derivates.QuarterTorus;
-import obj.derivates.ShellCylinder;
-import obj.organics2d.FlowerPetalRing;
-import obj.organics2d.LeafPair;
-import obj.organics2d.LeafSpiral;
-import obj.organics2d.LotusFringe;
-import obj.organics2d.OrnateKnot;
-import obj.organics2d.SpiralVine;
-import obj.organics2d.VineCurl;
-import obj.organics3d.BlobbyCluster;
-import obj.organics3d.BubbleCrown;
-import obj.organics3d.BulbTreeCrown;
-import obj.organics3d.DripCone;
-import obj.organics3d.JellyDonut;
-import obj.organics3d.KnotTube;
-import obj.organics3d.MeltedBox;
-import obj.organics3d.PuffyCross;
-import obj.organics3d.RibbonTwist;
-import obj.organics3d.SoftSphereWrap;
-import obj.organics3d.UndulatingPlane;
-import obj.organics3d.WavyCapsule;
+import Shapes; // Barrel import - makes all 39 shape classes available for Type.resolveClass()
 
 /**
   Main application - orchestrates engine, rendering, camera, and screenshot flow.

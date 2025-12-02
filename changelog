@@ -23,6 +23,13 @@
   - Named output files (Torus.png, Box2D.png) instead of timestamps
   - 3-frame delay between shader swaps for proper rendering
 
+### Added
+- **Shapes.hx barrel file** - Centralized import for all 39 shape classes using Haxe barrel pattern
+  - Single `import Shapes;` replaces 39 individual shape imports
+  - Makes all shape classes available to Type.resolveClass() for dynamic shader instantiation
+  - Used in Main.hx, ShapePanel.hx, and ShapeCatalog.hx for consistency
+  - Follows pattern from docs/haxe_barrel.md
+
 ### Refactored
 - **Main.hx modular architecture** - Extracted UI, shape management, and utilities into separate modules:
   - **ShapePanel.hx** - All UI logic (panel, scrolling, shape selection, keyboard/mouse events)

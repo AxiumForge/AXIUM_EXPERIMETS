@@ -3,32 +3,28 @@ package obj._2DOrganics;
 import h3d.Vector;
 
 class VineCurl {
-  class Object {
-    public static inline var color = new Vector(0.2, 0.75, 0.45);
-    public static inline var thickness = 0.1;
+  public static inline var color = new Vector(0.2, 0.75, 0.45);
+  public static inline var thickness = 0.1;
 
-    public static inline function distance(p:Vector):Float {
-      var r = Math.sqrt(p.x * p.x + p.z * p.z);
-      var a = Math.atan2(p.z, p.x);
+  public static inline function distance(p:Vector):Float {
+    var r = Math.sqrt(p.x * p.x + p.z * p.z);
+    var a = Math.atan2(p.z, p.x);
+    var target = 0.3 + 0.12 * a;
+    return Math.abs(r - target) - thickness;
+  }
+}
+
+class VineCurlShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var thickness = 0.1;
+      var r = length(pr.xz);
+      var a = atan(pr.z / pr.x);
       var target = 0.3 + 0.12 * a;
-      return Math.abs(r - target) - thickness;
+      var dist = abs(r - target) - thickness;
+      var col = vec3(0.2, 0.75, 0.45);
+      return vec4(dist, col.x, col.y, col.z);
     }
-  }
-
-  class Shader extends BaseRaymarchShader {
-    static var SRC = {
-      @param var time : Float;
-
-      function map(p:Vec3):Vec4 {
-        var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
-        var thickness = 0.1;
-        var r = length(pr.xz);
-        var a = atan(pr.z / pr.x);
-        var target = 0.3 + 0.12 * a;
-        var dist = abs(r - target) - thickness;
-        var col = vec3(0.2, 0.75, 0.45);
-        return vec4(dist, col.x, col.y, col.z);
-      }
-    }
-  }
+  };
 }

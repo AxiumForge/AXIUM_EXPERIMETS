@@ -50,11 +50,24 @@
 - Child shaders: kun implementerer map(p:Vec3):Vec4 funktion
 
 ## N�ste Opgaver
+- [ ] alle 2D SDF render forkert 
 
 ### HEAPS3D/3dobjectFarm
 - [ ] Refaktor Main.hx: flyt sidepanel UI (panel, scroll, hotkeys) ud i et separat modul/klasse.
 - [ ] Refaktor Main.hx: flyt shape-liste/shader-factory (useDefaultShapes, createShaderForShape) til eget modul.
 - [ ] Refaktor Main.hx: gør Main til orkestrator der kun initierer engine, håndterer render loop, kamerastate og screenshot flow med brug af de nye moduler.
+- [ ] Integrer ShapePanel.hx i Main.hx (sidepanel UI).
+- [ ] Integrer ShapeCatalog.hx i Main.hx (shape-liste + shader factory).
+- [ ] Integrer Screenshot.hx i Main.hx (single + sequence capture).
+- [x] Split nested klasse-pattern i obj._2DOrganics.FlowerPetalRing (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.LeafPair (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.LeafSpiral (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.LotusFringe (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.OrnateKnot (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.SpiralVine (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._2DOrganics.VineCurl (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._3dOrganic.BlobbyCluster (lav to top-level klasser: data/SDF + Shader, ingen nested).
+- [x] Split nested klasse-pattern i obj._3dOrganic.BubbleCrown (lav to top-level klasser: data/SDF + Shader, ingen nested).
 - [ ] Implementer shape blending/morphing mellem former
 - [ ] Add parameter controls i UI for each shape (radius, size, etc.)
 - [ ] Export shape gallery screenshots (alle 39 shapes)
@@ -71,4 +84,5 @@
 
 ## Noter
 - Husk at opdatere CHANGELOG undervejs
+- HUSK at alle opslag skal refereres med link i RAG
 - Vi taler dansk til hinanden - al tekst i projekt/repo og al kode er engelsk baseret

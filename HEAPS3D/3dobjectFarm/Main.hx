@@ -6,6 +6,8 @@ import h3d.Vector;
 import h3d.mat.Texture;
 import h2d.Text;
 import h2d.Interactive;
+import h2d.Graphics;
+import h2d.Object;
 import hxd.App;
 import hxd.Event;
 import hxd.Window;
@@ -31,8 +33,13 @@ class Main extends App {
 
   var currentShape : Int = 0;
   var shapeNames : Array<String>;
-  var shapeLabels : Array<Text>;
-  var selectedLabel : Text;
+  var uiPanel : Object;
+  var scrollContainer : Object;
+  var scrollOffset : Float = 0;
+  var maxScroll : Float = 0;
+  var shapeButtons : Array<{bg:Graphics, label:Text, interactive:Interactive}>;
+  var panelWidth : Int = 250;
+  var panelX : Float = 0;
 
   static function main() {
     new Main();
@@ -59,86 +66,164 @@ class Main extends App {
         trace("Auto-screenshot enabled via --sc flag");
       }
     }
+  }
 
-    initUI();
+  override function onResize() {
+    super.onResize();
+    if (s2d != null) {
+      panelX = s2d.width - panelWidth;
+      if (uiPanel != null) initUI();
+    }
   }
 
   function initUI() {
+    // Clear previous UI if exists
+    if (uiPanel != null) {
+      s2d.removeChildren();
+      shapeButtons = [];
+    }
+
     shapeNames = [
       "Sphere", "Box", "Capsule", "Torus", "Cone",
       "Cylinder", "Ellipsoid", "Pyramid", "Plane",
       "HollowSphere", "HollowBox", "ShellCylinder"
     ];
 
-    shapeLabels = [];
     var font = hxd.res.DefaultFont.get();
-    var yPos = 20.0;
+    var panelHeight = Std.int(s2d.height);
 
-    // Title
+    // Main panel background
+    var panelBg = new Graphics(s2d);
+    panelBg.beginFill(0x1a1a1a, 0.95);
+    panelBg.drawRect(0, 0, panelWidth, panelHeight);
+    panelBg.endFill();
+    panelBg.x = panelX;
+
+    // Title section
+    var titleBg = new Graphics(s2d);
+    titleBg.beginFill(0x333333);
+    titleBg.drawRect(0, 0, panelWidth, 60);
+    titleBg.endFill();
+    titleBg.x = panelX;
+
     var title = new Text(font, s2d);
     title.text = "SDF SHAPES";
-    title.x = 20;
-    title.y = yPos;
     title.textColor = 0xFFFFFF;
-    title.scale(1.5);
-    yPos += 35;
+    title.scale(1.8);
+    title.x = panelX + 15;
+    title.y = 18;
 
-    // Shape list
+    // Scrollable shape list container
+    var scrollAreaHeight = panelHeight - 230; // Leave space for title and help
+    scrollContainer = new Object(s2d);
+    scrollContainer.x = panelX;
+    scrollContainer.y = 70;
+
+    shapeButtons = [];
+    var btnWidth = panelWidth - 30;
+    var yPos = 0.0;
+
     for (i in 0...shapeNames.length) {
-      var label = new Text(font, s2d);
-      label.text = shapeNames[i];
-      label.x = 20;
-      label.y = yPos;
-      label.textColor = i == currentShape ? 0xFFFF00 : 0xAAAAAA;
-      label.scale(1.2);
+      var btn = new Object(scrollContainer);
+      btn.y = yPos;
+      btn.x = 15;
 
-      var bg = new Interactive(label.textWidth + 10, label.textHeight + 5, s2d);
-      bg.x = label.x - 5;
-      bg.y = label.y - 2;
-      bg.backgroundColor = 0x000000;
-      bg.alpha = 0.5;
+      var bg = new Graphics(btn);
+      bg.beginFill(i == currentShape ? 0x444444 : 0x2a2a2a);
+      bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
+      bg.endFill();
+
+      var label = new Text(font, btn);
+      label.text = shapeNames[i];
+      label.textColor = i == currentShape ? 0xFFFF00 : 0xCCCCCC;
+      label.scale(1.3);
+      label.x = 12;
+      label.y = 12;
+
+      var interactive = new Interactive(btnWidth, 45, btn);
+      interactive.backgroundColor = 0x555555;
+      interactive.alpha = 0;
 
       final shapeIndex = i;
-      bg.onClick = function(_) selectShape(shapeIndex);
-      bg.onOver = function(_) label.textColor = 0xFFFFFF;
-      bg.onOut = function(_) label.textColor = (shapeIndex == currentShape) ? 0xFFFF00 : 0xAAAAAA;
+      interactive.onClick = function(_) {
+        selectShape(shapeIndex);
+        refreshShapeButtons();
+      };
+      interactive.onOver = function(_) {
+        bg.clear();
+        bg.beginFill(0x555555);
+        bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
+        bg.endFill();
+      };
+      interactive.onOut = function(_) {
+        bg.clear();
+        bg.beginFill(shapeIndex == currentShape ? 0x444444 : 0x2a2a2a);
+        bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
+        bg.endFill();
+      };
 
-      s2d.addChildAt(label, s2d.numChildren);
-      shapeLabels.push(label);
-
-      yPos += 25;
+      shapeButtons.push({bg: bg, label: label, interactive: interactive});
+      yPos += 50;
     }
 
-    // Help text
-    yPos += 20;
+    var scrollAreaHeight = panelHeight - 230;
+    maxScroll = Math.max(0, yPos - scrollAreaHeight);
+
+    uiPanel = new Object(s2d); // Mark UI as initialized
+
+    // Help section at bottom
+    var helpY = panelHeight - 160;
+    var helpBg = new Graphics(s2d);
+    helpBg.beginFill(0x2a2a2a);
+    helpBg.drawRect(0, 0, panelWidth, 160);
+    helpBg.endFill();
+    helpBg.x = panelX;
+    helpBg.y = helpY;
+
+    var helpTitle = new Text(font, s2d);
+    helpTitle.text = "CONTROLS";
+    helpTitle.textColor = 0xCCCCCC;
+    helpTitle.scale(1.2);
+    helpTitle.x = panelX + 15;
+    helpTitle.y = helpY + 15;
+
     var helpLines = [
-      "CONTROLS:",
-      "Click shape to select",
-      "UP/DOWN - Prev/Next",
-      "0-9 - Direct select",
-      "Wheel - Zoom camera",
-      "F12/P - Screenshot"
+      "Click: Select shape",
+      "UP/DOWN: Navigate",
+      "Mouse wheel: Scroll/Zoom",
+      "F12 or P: Screenshot"
     ];
 
+    var lineY = helpY + 45;
     for (line in helpLines) {
-      var help = new Text(font, s2d);
-      help.text = line;
-      help.x = 20;
-      help.y = yPos;
-      help.textColor = line == "CONTROLS:" ? 0xCCCCCC : 0x888888;
-      help.scale(0.9);
-      yPos += 18;
+      var helpText = new Text(font, s2d);
+      helpText.text = line;
+      helpText.textColor = 0x999999;
+      helpText.scale(0.95);
+      helpText.x = panelX + 15;
+      helpText.y = lineY;
+      lineY += 22;
+    }
+  }
+
+  function refreshShapeButtons() {
+    for (i in 0...shapeButtons.length) {
+      var btn = shapeButtons[i];
+      var isSelected = i == currentShape;
+
+      btn.bg.clear();
+      btn.bg.beginFill(isSelected ? 0x444444 : 0x2a2a2a);
+      btn.bg.drawRoundedRect(0, 0, 220, 45, 5);
+      btn.bg.endFill();
+
+      btn.label.textColor = isSelected ? 0xFFFF00 : 0xCCCCCC;
     }
   }
 
   function selectShape(index:Int) {
     if (index == currentShape) return;
-
-    shapeLabels[currentShape].textColor = 0xAAAAAA;
     currentShape = index;
-    shapeLabels[currentShape].textColor = 0xFFFF00;
     shader.selectedShape = currentShape;
-
     trace("Selected shape: " + shapeNames[currentShape]);
   }
 
@@ -147,6 +232,12 @@ class Main extends App {
   }
 
   override function render(e:h3d.Engine) {
+    // Initialize UI on first render when we have proper dimensions
+    if (uiPanel == null) {
+      panelX = e.width - panelWidth;
+      initUI();
+    }
+
     shader.time = t;
     shader.resolution.set(e.width, e.height);
 
@@ -157,7 +248,7 @@ class Main extends App {
     shader.cameraUp.set(cam.up.x, cam.up.y, cam.up.z);
 
     if (pendingScreenshot) {
-      // For screenshot: render to texture, capture, then display
+      // For screenshot: render everything to texture (3D + 2D), then capture
       if (renderTarget == null || renderTarget.width != e.width || renderTarget.height != e.height) {
         if (renderTarget != null) renderTarget.dispose();
         renderTarget = new Texture(e.width, e.height, [Target]);
@@ -166,16 +257,20 @@ class Main extends App {
       e.pushTarget(renderTarget);
       e.clear(0x000000);
       fx.render();
+      s2d.render(e); // Render UI into texture too
       e.popTarget();
 
+      // Capture the full frame (3D + UI)
       captureScreenshot(e);
 
-      // Copy texture to screen
+      // Display on screen
+      e.clear(0x000000);
       copy.apply(renderTarget, null);
     } else {
-      // Normal render: directly to screen
+      // Normal render: 3D directly to screen, then 2D UI
       e.clear(0x000000);
       fx.render();
+      s2d.render(e);
     }
   }
 
@@ -217,15 +312,29 @@ class Main extends App {
           pendingScreenshot = true; // F12 primary, P fallback
         } else if (e.keyCode == Key.UP || e.keyCode == Key.LEFT) {
           selectShape((currentShape - 1 + shapeNames.length) % shapeNames.length);
+          refreshShapeButtons();
         } else if (e.keyCode == Key.DOWN || e.keyCode == Key.RIGHT) {
           selectShape((currentShape + 1) % shapeNames.length);
+          refreshShapeButtons();
         } else if (e.keyCode >= Key.NUMBER_0 && e.keyCode <= Key.NUMBER_9) {
           var num = e.keyCode - Key.NUMBER_0;
-          if (num < shapeNames.length) selectShape(num);
+          if (num < shapeNames.length) {
+            selectShape(num);
+            refreshShapeButtons();
+          }
         }
       case EWheel:
-        var zoomFactor = Math.pow(0.9, e.wheelDelta);
-        distance = clamp(distance * zoomFactor, 2.0, 12.0);
+        // Check if mouse is over UI panel
+        var mouseX = s2d.mouseX;
+        if (mouseX > s2d.width - 250) {
+          // Scroll panel
+          scrollOffset = clamp(scrollOffset - e.wheelDelta * 30, 0, maxScroll);
+          scrollContainer.y = 70 - scrollOffset;
+        } else {
+          // Zoom camera
+          var zoomFactor = Math.pow(0.9, e.wheelDelta);
+          distance = clamp(distance * zoomFactor, 2.0, 12.0);
+        }
       default:
     }
   }

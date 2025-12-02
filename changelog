@@ -43,12 +43,12 @@
       }
   }
   ```
-- **Package structure** - Fixed package names to match folder structure:
+- **Package structure** - Fixed package names to match folder structure and Haxe naming conventions:
   - `obj.primitives` (was `obj`)
   - `obj.primitives2d` (renamed folder from `2dprimitives` to match package)
   - `obj.derivates`
-  - `obj._2DOrganics`
-  - `obj._3dOrganic`
+  - `obj.organics2d` (was `obj._2DOrganics`, renamed to Haxe-compliant name)
+  - `obj.organics3d` (was `obj._3dOrganic`, renamed to Haxe-compliant name)
 - **Main.hx** - Refactored to use dynamic shader swapping instead of monolithic SDFObjectFarmShader
 
 ### Fixed
@@ -57,6 +57,13 @@
 - **Inline variable errors** - Removed `inline` keyword from static variables with `new Vector()` initializers (only kept on functions)
 - **Package/folder mismatch** - Renamed `obj/2dprimitives/` to `obj/primitives2d/` to match Haxe package naming conventions
 - **Reserved keyword issue** - Renamed `package` field to `pkg` in shapeCategories anonymous structure (package is reserved keyword in Haxe)
+- **2D SDF rendering bug** - Fixed all 2D shapes (primitives and organics) rendering incorrectly
+  - Problem: Used `rotateXYZ()` which rotates in all 3 dimensions, deforming 2D shapes to 3D
+  - Solution: Added `rotateY()` helper function to BaseRaymarchShader for Y-axis rotation only
+  - Updated all 12 2D shapes (5 primitives + 7 organics) to use `rotateY()` instead of `rotateXYZ()`
+  - Renamed organic folders to Haxe-compliant names: `obj._2DOrganics` → `obj.organics2d`, `obj._3dOrganic` → `obj.organics3d`
+  - Fixed variable name conflict in RibbonTwist.hx (`length` variable shadowing built-in function)
+  - Fixed inline errors in all organic shapes (arrays and Vector instances cannot be inline)
 
 ### Testing
 - ✅ Compilation successful after fixing all module pattern issues
@@ -66,6 +73,8 @@
 - ✅ Multi-shape screenshot sequence tested (`--sc --torus --box2d`)
 - ✅ 4-shape screenshot sequence tested (`--sc --sphere --capsule --pyramid --heart`)
 - ✅ Named screenshot files generated correctly (Torus.png, Box2D.png, etc.)
+- ✅ 2D shapes rendering correctly verified (Box2D, Circle, Heart, LeafPair all render as proper 2D shapes)
+- ✅ All 39 shapes compile and load successfully with new package structure
 
 ### Technical Details
 

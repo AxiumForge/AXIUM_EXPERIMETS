@@ -16,6 +16,12 @@
   - `docs/haxe-heaps-patterns.md` - RAG document with Haxe/Heaps best practices and references
   - `obj/README.md` - Updated with module pattern documentation and usage examples
 - **Screenshot functionality** - F12/P keys and --sc command line flag for automated screenshots
+- **Dynamic shape-based screenshot system** - Auto-discovery system for taking screenshots of specific shapes
+  - Parse command line args for shape flags (e.g., `--torus --box2d`)
+  - Automatically generates flags for all shapes - not hardcoded, adapts to new shapes
+  - Sequential screenshot capture when `--sc` combined with shape flags
+  - Named output files (Torus.png, Box2D.png) instead of timestamps
+  - 3-frame delay between shader swaps for proper rendering
 
 ### Changed
 - **Shape file structure** - From nested classes to proper module pattern with two top-level classes:
@@ -50,12 +56,16 @@
 - **Duplicate parameter declarations** - Removed `@param var time : Float;` from all child shaders (inherited from BaseRaymarchShader)
 - **Inline variable errors** - Removed `inline` keyword from static variables with `new Vector()` initializers (only kept on functions)
 - **Package/folder mismatch** - Renamed `obj/2dprimitives/` to `obj/primitives2d/` to match Haxe package naming conventions
+- **Reserved keyword issue** - Renamed `package` field to `pkg` in shapeCategories anonymous structure (package is reserved keyword in Haxe)
 
 ### Testing
 - ✅ Compilation successful after fixing all module pattern issues
 - ✅ Screenshot test (`--sc` flag) confirms BoxShader renders correctly
 - ✅ UI panel displays all 20 converted shapes with correct categorization
 - ✅ Shape selection and shader swapping functional
+- ✅ Multi-shape screenshot sequence tested (`--sc --torus --box2d`)
+- ✅ 4-shape screenshot sequence tested (`--sc --sphere --capsule --pyramid --heart`)
+- ✅ Named screenshot files generated correctly (Torus.png, Box2D.png, etc.)
 
 ### Technical Details
 

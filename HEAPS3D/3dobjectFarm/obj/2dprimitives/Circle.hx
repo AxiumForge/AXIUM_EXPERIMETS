@@ -1,0 +1,16 @@
+package obj.primitives2d;
+
+import h3d.Vector;
+
+class Circle {
+  public static inline var color = new Vector(0.2, 0.8, 0.9);
+  public static inline var radius = 0.6;
+  public static inline var center = new Vector(0.0, 0.0, 0.0);
+
+  public static inline function distance(p:Vector):Float {
+    // use x,z as 2D plane
+    var dx = p.x;
+    var dz = p.z;
+    return Math.sqrt(dx * dx + dz * dz) - radius;
+  }
+}

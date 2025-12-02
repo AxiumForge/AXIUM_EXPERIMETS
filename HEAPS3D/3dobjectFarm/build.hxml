@@ -1,0 +1,6 @@
+-cp .
+-main Main
+-lib heaps
+-lib hlsdl
+-hl bin/main.hl
+-D analyzer-optimize

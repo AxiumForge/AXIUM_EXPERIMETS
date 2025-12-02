@@ -3,22 +3,49 @@ package obj._2DOrganics;
 import h3d.Vector;
 
 class LeafPair {
-  public static inline var color = new Vector(0.3, 0.9, 0.5);
-  public static inline var length = 0.8;
-  public static inline var width = 0.35;
-  public static inline var gap = 0.1;
+  class Object {
+    public static inline var color = new Vector(0.3, 0.9, 0.5);
+    public static inline var length = 0.8;
+    public static inline var width = 0.35;
+    public static inline var gap = 0.1;
 
-  public static inline function distance(p:Vector):Float {
-    var dLeft = leafSDF(new Vector(p.x + gap, p.z));
-    var dRight = leafSDF(new Vector(-p.x + gap, p.z));
-    return Math.min(dLeft, dRight);
+    public static inline function distance(p:Vector):Float {
+      var dLeft = leafSDF(new Vector(p.x + gap, p.z));
+      var dRight = leafSDF(new Vector(-p.x + gap, p.z));
+      return Math.min(dLeft, dRight);
+    }
+
+    static inline function leafSDF(p:Vector):Float {
+      // teardrop leaf shape
+      var qx = Math.abs(p.x) / width;
+      var qy = p.y / length;
+      var k = Math.max(qx + qy, qy);
+      return k - 1.0;
+    }
   }
 
-  static inline function leafSDF(p:Vector):Float {
-    // teardrop leaf shape
-    var qx = Math.abs(p.x) / width;
-    var qy = p.y / length;
-    var k = Math.max(qx + qy, qy);
-    return k - 1.0;
+  class Shader extends BaseRaymarchShader {
+    static var SRC = {
+      @param var time : Float;
+
+      function leafSDF(p:Vec2, leafWidth:Float, leafLength:Float):Float {
+        var qx = abs(p.x) / leafWidth;
+        var qy = p.y / leafLength;
+        var k = max(qx + qy, qy);
+        return k - 1.0;
+      }
+
+      function map(p:Vec3):Vec4 {
+        var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+        var leafWidth = 0.35;
+        var leafLength = 0.8;
+        var gap = 0.1;
+        var dLeft = leafSDF(vec2(pr.x + gap, pr.z), leafWidth, leafLength);
+        var dRight = leafSDF(vec2(-pr.x + gap, pr.z), leafWidth, leafLength);
+        var dist = min(dLeft, dRight);
+        var col = vec3(0.3, 0.9, 0.5);
+        return vec4(dist, col.x, col.y, col.z);
+      }
+    }
   }
 }

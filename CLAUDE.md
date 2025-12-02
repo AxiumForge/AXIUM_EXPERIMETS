@@ -132,3 +132,4 @@ Both engines implement identical procedural scenes:
 - Animation uses `sin(time * 0.5) * 0.1` for Y-axis pulsing effect
 - Camera positioned at `(0, 0, 4)` with ray direction normalized from UV coordinates
 - Background gradient based on UV Y-coordinate: `0.15 + 0.1 * uv.y` with blue tint
+- alle opslag skal i RAG for at undgå flere opslag end nødvendigt med link

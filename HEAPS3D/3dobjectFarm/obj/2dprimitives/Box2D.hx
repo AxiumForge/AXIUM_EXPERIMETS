@@ -3,9 +3,9 @@ package obj.primitives2d;
 import h3d.Vector;
 
 class Box2D {
-  public static inline var color = new Vector(0.9, 0.4, 0.3);
-  public static inline var halfExtents = new Vector(0.7, 0.0, 0.45);
-  public static inline var center = new Vector(0.0, 0.0, 0.0);
+  public static var color = new Vector(0.9, 0.4, 0.3);
+  public static var halfExtents = new Vector(0.7, 0.0, 0.45);
+  public static var center = new Vector(0.0, 0.0, 0.0);
 
   public static inline function distance(p:Vector):Float {
     var qx = Math.abs(p.x) - halfExtents.x;
@@ -16,4 +16,19 @@ class Box2D {
     var inside = Math.min(Math.max(qx, qz), 0.0);
     return outside + inside;
   }
+}
+
+class Box2DShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var halfExtents = vec2(0.7, 0.45);
+      var q = vec2(abs(pr.x) - halfExtents.x, abs(pr.z) - halfExtents.y);
+      var outside = length(max(q, vec2(0.0, 0.0)));
+      var inside = min(max(q.x, q.y), 0.0);
+      var dist = outside + inside;
+      var col = vec3(0.9, 0.4, 0.3);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
 }

@@ -21,10 +21,32 @@ import sys.FileSystem;
 import haxe.io.Path;
 import StringTools;
 
+// Shape shader imports
+import obj.primitives.Box;
+import obj.primitives.Sphere;
+import obj.primitives.Capsule;
+import obj.primitives.Cone;
+import obj.primitives.Cylinder;
+import obj.primitives.Ellipsoid;
+import obj.primitives.Plane;
+import obj.primitives.Pyramid;
+import obj.primitives.Torus;
+import obj.primitives2d.Box2D;
+import obj.primitives2d.Circle;
+import obj.primitives2d.Heart;
+import obj.primitives2d.RoundedBox2D;
+import obj.primitives2d.Star;
+import obj.derivates.HalfCapsule;
+import obj.derivates.HoledPlane;
+import obj.derivates.HollowBox;
+import obj.derivates.HollowSphere;
+import obj.derivates.QuarterTorus;
+import obj.derivates.ShellCylinder;
+
 class Main extends App {
 
-  var fx : ScreenFx<SDFObjectFarmShader>;
-  var shader : SDFObjectFarmShader;
+  var fx : ScreenFx<BaseRaymarchShader>;
+  var shader : BaseRaymarchShader;
   var viewportTexture : Texture;
   var screenshotTexture : Texture;
   var copy : Copy;
@@ -52,8 +74,7 @@ class Main extends App {
   }
 
   override function init() {
-    shader = new SDFObjectFarmShader();
-    shader.selectedShape = currentShape;
+    shader = createShaderForShape("Box"); // Start with Box
     fx = new ScreenFx(shader);
     copy = new Copy();
     Window.getInstance().addEventTarget(onEvent);
@@ -266,10 +287,44 @@ class Main extends App {
     }
   }
 
+  function createShaderForShape(name:String):BaseRaymarchShader {
+    return switch(name) {
+      case "Box": new BoxShader();
+      case "Sphere": new SphereShader();
+      case "Capsule": new CapsuleShader();
+      case "Cone": new ConeShader();
+      case "Cylinder": new CylinderShader();
+      case "Ellipsoid": new EllipsoidShader();
+      case "Plane": new PlaneShader();
+      case "Pyramid": new PyramidShader();
+      case "Torus": new TorusShader();
+      case "Box2D": new Box2DShader();
+      case "Circle": new CircleShader();
+      case "Heart": new HeartShader();
+      case "RoundedBox2D": new RoundedBox2DShader();
+      case "Star": new StarShader();
+      case "HalfCapsule": new HalfCapsuleShader();
+      case "HoledPlane": new HoledPlaneShader();
+      case "HollowBox": new HollowBoxShader();
+      case "HollowSphere": new HollowSphereShader();
+      case "QuarterTorus": new QuarterTorusShader();
+      case "ShellCylinder": new ShellCylinderShader();
+      default: new SphereShader(); // fallback
+    };
+  }
+
   function selectShape(index:Int) {
     if (index == currentShape) return;
     currentShape = index;
-    shader.selectedShape = currentShape;
+
+    // Create new shader for selected shape
+    shader = createShaderForShape(shapeNames[currentShape]);
+    shader.time = t;
+    shader.resolution.set(viewportWidth, viewportHeight);
+
+    // Update fx with new shader
+    fx.shader = shader;
+
     trace("Selected shape: " + shapeNames[currentShape]);
   }
 
@@ -291,8 +346,9 @@ class Main extends App {
     viewportHeight = e.height;
     panelX = viewportWidth;
 
+    // Update shader uniforms every frame
     shader.time = t;
-    shader.resolution.set(viewportWidth, viewportHeight); // 3D viewport only
+    shader.resolution.set(viewportWidth, viewportHeight);
 
     var cam = computeCamera(t);
     shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);

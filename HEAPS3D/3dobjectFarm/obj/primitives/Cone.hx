@@ -1,14 +1,13 @@
-package obj;
+package obj.primitives;
 
 import h3d.Vector;
 
 class Cone {
-  public static inline var color = new Vector(0.85, 0.35, 0.75);
-  public static inline var height = 1.0;
-  public static inline var radius = 0.6;
-  public static inline var center = new Vector(-0.2, -0.2, 1.2);
+  public static var color = new Vector(0.85, 0.35, 0.75);
+  public static var height = 1.0;
+  public static var radius = 0.6;
+  public static var center = new Vector(-0.2, -0.2, 1.2);
 
-  // finite cone with rounded tip at apex
   public static function distance(p:Vector):Float {
     var h = height;
     var r = radius;
@@ -26,4 +25,18 @@ class Cone {
     var d = Math.max(d1, -d2) * s;
     return d;
   }
+}
+
+class ConeShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var h = 0.8;
+      var r = 0.5;
+      var q = length(vec2(pr.x, pr.z));
+      var dist = max(dot(vec2(r, h), vec2(q, pr.y)) / (r * r + h * h), -pr.y - h) * sqrt(r * r + h * h) / r;
+      var col = vec3(0.85, 0.35, 0.75);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
 }

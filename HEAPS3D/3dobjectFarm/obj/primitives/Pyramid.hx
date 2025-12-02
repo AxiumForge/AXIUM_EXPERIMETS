@@ -1,13 +1,12 @@
-package obj;
+package obj.primitives;
 
 import h3d.Vector;
 
 class Pyramid {
-  public static inline var color = new Vector(0.4, 0.9, 0.5);
-  public static inline var height = 0.8;
-  public static inline var center = new Vector(1.4, -0.05, 0.0);
+  public static var color = new Vector(0.4, 0.9, 0.5);
+  public static var height = 0.8;
+  public static var center = new Vector(1.4, -0.05, 0.0);
 
-  // Square pyramid signed distance (base 1x1 centered, height h)
   public static function distance(p:Vector):Float {
     var h = height;
     var m2 = h * h + 0.25;
@@ -39,4 +38,32 @@ class Pyramid {
   static inline function clamp(v:Float, lo:Float, hi:Float):Float {
     return v < lo ? lo : (v > hi ? hi : v);
   }
+}
+
+class PyramidShader extends BaseRaymarchShader {
+  static var SRC = {
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var h = 0.7;
+      var m2 = h * h + 0.25;
+      var pxz = abs(vec2(pr.x, pr.z));
+      if (pxz.y > pxz.x) {
+        pxz = pxz.yx;
+        pr = vec3(pr.z, pr.y, pr.x);
+      }
+      pxz -= 0.5;
+      var py = pr.y - h;
+      var q = vec3(pxz.x, py * h + pxz.y * 0.5, pxz.y);
+      var s = max(-q.y, 0.0);
+      var a = m2 * q.x * q.x - h * h * q.y * q.y;
+      var k = clamp((q.x * h + q.y * 0.5) / m2, 0.0, 1.0);
+      var b = m2 * (q.x - k * h) * (q.x - k * h) + q.y * q.y - 0.25 * k * k;
+      var d = a > 0.0 ? sqrt(a) / m2 : -q.y;
+      var d2 = b > 0.0 ? sqrt(b) / m2 : (-q.y - k * 0.5);
+      var dist = length(vec2(max(d, s), max(d2, s)));
+      dist = (max(q.y, -py) < 0.0) ? -dist : dist;
+      var col = vec3(0.4, 0.9, 0.5);
+      return vec4(dist, col.x, col.y, col.z);
+    }
+  };
 }

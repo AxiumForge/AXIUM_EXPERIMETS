@@ -1,0 +1,78 @@
+# AXIUM_EXPERIMENTS Changelog
+
+## 2025-12-02 - Modular SDF Shape Architecture
+
+### Added
+- **Modular shape organization** - Each shape now has its own module with data class and shader class
+  - Implemented for 20/39 shapes: all primitives (9), 2D primitives (5), derivates (6)
+  - Remaining 19 shapes pending conversion
+- **BaseRaymarchShader** - Base shader class for all SDF shapes with common raymarching/lighting
+- **Documentation**:
+  - `docs/haxe-heaps-patterns.md` - RAG document with Haxe/Heaps best practices and references
+  - `obj/README.md` - Updated with module pattern documentation and usage examples
+- **Screenshot functionality** - F12/P keys and --sc command line flag for automated screenshots
+
+### Changed
+- **Shape file structure** - From single data class to module pattern:
+  ```haxe
+  // Before: Single class with data only
+  class Box {
+      public static var color = ...;
+      public static function distance(p:Vector):Float { }
+  }
+
+  // After: Module with data class + shader class
+  class Box {
+      public static var color = ...;
+      public static function distance(p:Vector):Float { }
+  }
+  class BoxShader extends BaseRaymarchShader {
+      static var SRC = {
+          function map(p:Vec3):Vec4 { }
+      }
+  }
+  ```
+- **Package structure** - Fixed package names to match folder structure:
+  - `obj.primitives` (was `obj`)
+  - `obj.primitives2d`
+  - `obj.derivates`
+  - `obj._2DOrganics`
+  - `obj._3dOrganic`
+
+### Technical Details
+
+**Architecture Pattern:**
+- Follows Haxe module conventions (primary type + sub-types in same file)
+- Follows HXSL philosophy (small focused shaders, not Uber Shader)
+- Separation of concerns (CPU data/logic vs GPU shader code)
+- Easy maintenance (everything for one shape in one file)
+
+**Implemented Shapes (20/39):**
+
+*Primitives (9):*
+- Box, Sphere, Capsule, Cone, Cylinder, Ellipsoid, Plane, Pyramid, Torus
+
+*2D Primitives (5):*
+- Box2D, Circle, Heart, RoundedBox2D, Star
+
+*Derivates (6):*
+- HalfCapsule, HoledPlane, HollowBox, HollowSphere, QuarterTorus, ShellCylinder
+
+**Pending Conversion (19/39):**
+
+*2D Organics (7):*
+- FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
+
+*3D Organic (12):*
+- BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
+
+### References
+- [Haxe Module Sub-Types](https://haxe.org/manual/type-system-module-sub-types.html)
+- [HXSL Documentation](https://heaps.io/documentation/hxsl.html)
+- [HXSL Wiki](https://github.com/HeapsIO/heaps/wiki/HXSL)
+
+---
+
+## Previous Changes
+
+(Add previous changelog entries here)

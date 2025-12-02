@@ -20,9 +20,9 @@
 
 #### Mangler �
 - [x] Gør det muligt at bruge --sc med en form --torus --2dbox så du kan se alle former der er i et screenshot - sørg for at --form ikke er hardcoded men et system der automatisk tilføjer ved nye forme.
-- [ ] Konverter resterende 19 shapes til module pattern:
-  - [ ] 2D Organics (7): FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
-  - [ ] 3D Organic (12): BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
+- [x] Konverter resterende 19 shapes til module pattern:
+  - [x] 2D Organics (7): FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
+  - [x] 3D Organic (12): BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
 - [x] Mangler shader + GPU map(): obj._3dOrganic.WavyCapsule
 - [x] Mangler shader + GPU map(): obj._3dOrganic.BulbTreeCrown
 - [x] Mangler shader + GPU map(): obj._3dOrganic.SoftSphereWrap
@@ -53,12 +53,12 @@
 - [x] alle 2D SDF render forkert (Fixed: 2D shapes now use rotateY() instead of rotateXYZ())
 
 ### HEAPS3D/3dobjectFarm
-- [ ] Refaktor Main.hx: flyt sidepanel UI (panel, scroll, hotkeys) ud i et separat modul/klasse.
-- [ ] Refaktor Main.hx: flyt shape-liste/shader-factory (useDefaultShapes, createShaderForShape) til eget modul.
-- [ ] Refaktor Main.hx: gør Main til orkestrator der kun initierer engine, håndterer render loop, kamerastate og screenshot flow med brug af de nye moduler.
-- [ ] Integrer ShapePanel.hx i Main.hx (sidepanel UI).
-- [ ] Integrer ShapeCatalog.hx i Main.hx (shape-liste + shader factory).
-- [ ] Integrer Screenshot.hx i Main.hx (single + sequence capture).
+- [x] Refaktor Main.hx: flyt sidepanel UI (panel, scroll, hotkeys) ud i et separat modul/klasse.
+- [x] Refaktor Main.hx: flyt shape-liste/shader-factory (useDefaultShapes, createShaderForShape) til eget modul.
+- [x] Refaktor Main.hx: gør Main til orkestrator der kun initierer engine, håndterer render loop, kamerastate og screenshot flow med brug af de nye moduler.
+- [x] Integrer ShapePanel.hx i Main.hx (sidepanel UI).
+- [x] Integrer ShapeCatalog.hx i Main.hx (shape-liste + shader factory).
+- [x] Integrer Screenshot.hx i Main.hx (single + sequence capture).
 - [x] Split nested klasse-pattern i obj._2DOrganics.FlowerPetalRing (lav to top-level klasser: data/SDF + Shader, ingen nested).
 - [x] Split nested klasse-pattern i obj._2DOrganics.LeafPair (lav to top-level klasser: data/SDF + Shader, ingen nested).
 - [x] Split nested klasse-pattern i obj._2DOrganics.LeafSpiral (lav to top-level klasser: data/SDF + Shader, ingen nested).

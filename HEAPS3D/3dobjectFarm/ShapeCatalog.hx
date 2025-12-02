@@ -1,12 +1,11 @@
 package;
 
 import haxe.ds.ReadOnlyArray;
-import obj.primitives.SphereShader;
 
 typedef ShapeCategory = {
   name:String,
   shapes:Array<String>,
-  package:String
+  pkg:String
 };
 
 /**
@@ -17,11 +16,11 @@ class ShapeCatalog {
 
   public static function defaultCategories():Array<ShapeCategory> {
     return [
-      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], package: "obj.primitives"},
-      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], package: "obj.primitives2d"},
-      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], package: "obj.derivates"},
-      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], package: "obj._2DOrganics"},
-      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], package: "obj._3dOrganic"}
+      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], pkg: "obj.primitives"},
+      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], pkg: "obj.primitives2d"},
+      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], pkg: "obj.derivates"},
+      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], pkg: "obj.organics2d"},
+      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], pkg: "obj.organics3d"}
     ];
   }
 
@@ -40,7 +39,7 @@ class ShapeCatalog {
     for (cat in categories) {
       for (shapeName in cat.shapes) {
         if (shapeName == name) {
-          var className = cat.package + "." + name + "Shader";
+          var className = cat.pkg + "." + name + "Shader";
           var cls = Type.resolveClass(className);
           if (cls != null) {
             return cast Type.createInstance(cls, []);
@@ -48,7 +47,11 @@ class ShapeCatalog {
         }
       }
     }
-    // Fallback to Sphere
-    return new SphereShader();
+    // Fallback to Sphere shader
+    var sphereCls = Type.resolveClass("obj.primitives.SphereShader");
+    if (sphereCls != null) {
+      return cast Type.createInstance(sphereCls, []);
+    }
+    throw "Failed to create fallback shader";
   }
 }

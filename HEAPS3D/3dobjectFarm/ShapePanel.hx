@@ -1,55 +1,125 @@
 package;
 
-import h2d.Graphics;
-import h2d.Interactive;
-import h2d.Mask;
-import h2d.Object;
 import h2d.Text;
-import hxd.res.DefaultFont;
+import h2d.Interactive;
+import h2d.Graphics;
+import h2d.Object;
+import h2d.Mask;
+import h2d.Scene;
+import hxd.Event;
+import hxd.Key;
+import ShapeCatalog.ShapeCategory;
 
 /**
-  Extracted sidepanel UI (buttons, scroll, headers) from Main.hx.
-  Build with buildPanel(), refresh via refreshButtons(), scroll via scrollBy().
+  Side panel UI for shape selection.
+  Extracted from Main.hx to keep UI logic separate from core rendering.
 **/
 class ShapePanel {
-  public var panelWidth:Int;
-  public var panelX:Float;
-  public var maxScroll:Float = 0;
-  public var scrollOffset:Float = 0;
-  public var uiPanel:Object;
-  public var scrollContainer:Object;
-  public var shapeButtons:Array<{bg:Graphics, label:Text, interactive:Interactive}>;
 
-  public function new(panelWidth:Int = 250) {
-    this.panelWidth = panelWidth;
-    this.panelX = 0;
-    shapeButtons = [];
-  }
+  public var panelWidth(default, null):Int = 250;
+  public var panelX(default, null):Float = 0;
+
+  var s2d:Scene;
+  var shapeNames:Array<String>;
+  var shapeCategories:Array<ShapeCategory>;
+  var currentShape:Int;
+  var onShapeSelected:Int->Void;
+
+  var uiPanel:Object;
+  var scrollContainer:Object;
+  var scrollOffset:Float = 0;
+  var maxScroll:Float = 0;
+  var shapeButtons:Array<{bg:Graphics, label:Text, interactive:Interactive}>;
 
   /**
-    Build the panel UI.
-    @param s2d The scene/root container
-    @param categories Shape categories to render
-    @param shapeNames Flat list of shape names
-    @param currentShape Currently selected index
-    @param panelHeight Height of the panel
-    @param panelX X offset where the panel should render
-    @param onSelect Callback when a shape is clicked (receives shape index)
+    Create the shape panel.
+    - s2d: The 2D scene to render UI into
+    - categories: Shape categories to display
+    - initialShape: Index of initially selected shape
+    - onShapeSelected: Callback when user selects a shape
   **/
-  public function buildPanel(s2d:Object, categories:Array<ShapeCategory>, shapeNames:Array<String>, currentShape:Int, panelHeight:Int, panelX:Float, onSelect:Int->Void):Void {
-    clearUI(s2d);
+  public function new(s2d:Scene, categories:Array<ShapeCategory>, initialShape:Int, onShapeSelected:Int->Void) {
+    this.s2d = s2d;
+    this.shapeCategories = categories;
+    this.currentShape = initialShape;
+    this.onShapeSelected = onShapeSelected;
 
-    this.panelX = panelX;
-    var font = DefaultFont.get();
+    // Flatten shape names
+    this.shapeNames = ShapeCatalog.shapeNames(categories);
 
-    // Panel background
+    initUI();
+  }
+
+  /** Update panel position when window resizes. */
+  public function onResize(sceneWidth:Int):Void {
+    panelX = sceneWidth - panelWidth;
+    if (uiPanel != null) initUI();
+  }
+
+  /** Set the currently selected shape (updates UI visuals). */
+  public function setCurrentShape(index:Int):Void {
+    if (index == currentShape) return;
+    currentShape = index;
+    refreshShapeButtons();
+  }
+
+  /** Handle keyboard/mouse events relevant to the panel. Returns true if event was consumed. */
+  public function handleEvent(e:Event):Bool {
+    switch (e.kind) {
+      case EKeyDown:
+        if (e.keyCode == Key.UP || e.keyCode == Key.LEFT) {
+          var newIndex = (currentShape - 1 + shapeNames.length) % shapeNames.length;
+          currentShape = newIndex;
+          onShapeSelected(newIndex);
+          refreshShapeButtons();
+          return true;
+        } else if (e.keyCode == Key.DOWN || e.keyCode == Key.RIGHT) {
+          var newIndex = (currentShape + 1) % shapeNames.length;
+          currentShape = newIndex;
+          onShapeSelected(newIndex);
+          refreshShapeButtons();
+          return true;
+        } else if (e.keyCode >= Key.NUMBER_0 && e.keyCode <= Key.NUMBER_9) {
+          var num = e.keyCode - Key.NUMBER_0;
+          if (num < shapeNames.length) {
+            currentShape = num;
+            onShapeSelected(num);
+            refreshShapeButtons();
+            return true;
+          }
+        }
+      case EWheel:
+        // Check if mouse is over UI panel
+        var mouseX = s2d.mouseX;
+        if (mouseX > panelX) {
+          // Scroll panel
+          scrollOffset = clamp(scrollOffset - e.wheelDelta * 30, 0, maxScroll);
+          scrollContainer.y = -scrollOffset;
+          return true;
+        }
+      default:
+    }
+    return false;
+  }
+
+  function initUI():Void {
+    // Clear previous UI if exists
+    if (uiPanel != null) {
+      s2d.removeChildren();
+      shapeButtons = [];
+    }
+
+    var font = hxd.res.DefaultFont.get();
+    var panelHeight = Std.int(s2d.height);
+
+    // Main panel background
     var panelBg = new Graphics(s2d);
     panelBg.beginFill(0x1a1a1a, 0.95);
     panelBg.drawRect(0, 0, panelWidth, panelHeight);
     panelBg.endFill();
     panelBg.x = panelX;
 
-    // Title
+    // Title section
     var titleBg = new Graphics(s2d);
     titleBg.beginFill(0x333333);
     titleBg.drawRect(0, 0, panelWidth, 60);
@@ -63,8 +133,8 @@ class ShapePanel {
     title.x = panelX + 15;
     title.y = 18;
 
-    // Scrollable list
-    var scrollAreaHeight = panelHeight - 230;
+    // Scrollable shape list container with masking
+    var scrollAreaHeight = panelHeight - 230; // Leave space for title and help
     var scrollMask = new Mask(panelWidth - 20, scrollAreaHeight, s2d);
     scrollMask.x = panelX + 10;
     scrollMask.y = 70;
@@ -78,7 +148,9 @@ class ShapePanel {
     var yPos = 0.0;
     var shapeIndex = 0;
 
-    for (category in categories) {
+    // Build shape list with category headers
+    for (category in shapeCategories) {
+      // Category header
       var header = new Text(font, scrollContainer);
       header.text = category.name.toUpperCase();
       header.textColor = 0xFFFFFF;
@@ -87,6 +159,7 @@ class ShapePanel {
       header.y = yPos + 5;
       yPos += 30;
 
+      // Category shapes
       for (shapeName in category.shapes) {
         var btn = new Object(scrollContainer);
         btn.y = yPos;
@@ -110,8 +183,9 @@ class ShapePanel {
 
         final btnIndex = shapeIndex;
         interactive.onClick = function(_) {
-          onSelect(btnIndex);
-          refreshButtons(currentShape); // caller should refresh after updating state
+          currentShape = btnIndex;
+          onShapeSelected(btnIndex);
+          refreshShapeButtons();
         };
         interactive.onOver = function(_) {
           bg.clear();
@@ -133,9 +207,9 @@ class ShapePanel {
     }
 
     maxScroll = Math.max(0, yPos - scrollAreaHeight);
-    uiPanel = new Object(s2d);
+    uiPanel = new Object(s2d); // Mark UI as initialized
 
-    // Help box
+    // Help section at bottom
     var helpY = panelHeight - 160;
     var helpBg = new Graphics(s2d);
     helpBg.beginFill(0x2a2a2a);
@@ -170,33 +244,19 @@ class ShapePanel {
     }
   }
 
-  /** Refresh button colors after selection state changes. */
-  public function refreshButtons(currentShape:Int):Void {
+  function refreshShapeButtons():Void {
     var btnWidth = panelWidth - 30;
     for (i in 0...shapeButtons.length) {
       var btn = shapeButtons[i];
       var isSelected = i == currentShape;
+
       btn.bg.clear();
       btn.bg.beginFill(isSelected ? 0x444444 : 0x2a2a2a);
       btn.bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
       btn.bg.endFill();
+
       btn.label.textColor = isSelected ? 0xFFFF00 : 0xCCCCCC;
     }
-  }
-
-  /** Scroll the list by pixel delta (positive moves up). */
-  public function scrollBy(delta:Float):Void {
-    scrollOffset = clamp(scrollOffset + delta, 0, maxScroll);
-    if (scrollContainer != null) {
-      scrollContainer.y = -scrollOffset;
-    }
-  }
-
-  private function clearUI(s2d:Object):Void {
-    if (s2d != null) {
-      s2d.removeChildren();
-    }
-    shapeButtons = [];
   }
 
   static inline function clamp(v:Float, lo:Float, hi:Float):Float {

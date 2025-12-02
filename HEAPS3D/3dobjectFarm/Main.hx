@@ -4,24 +4,17 @@ import h3d.pass.ScreenFx;
 import h3d.pass.Copy;
 import h3d.Vector;
 import h3d.mat.Texture;
-import h2d.Text;
-import h2d.Interactive;
-import h2d.Graphics;
-import h2d.Object;
-import h2d.Mask;
 import hxd.App;
 import hxd.Event;
 import hxd.Window;
 import hxd.Key;
-import hxd.PixelFormat;
-import hxd.Pixels;
 import Sys;
-import sys.io.File;
-import sys.FileSystem;
-import haxe.io.Path;
 import StringTools;
 
-// Shape shader imports
+// Module imports
+import ShapeCatalog.ShapeCategory; // typedef from ShapeCatalog
+
+// Shape shader imports - still needed for Type.resolveClass to work
 import obj.primitives.Box;
 import obj.primitives.Sphere;
 import obj.primitives.Capsule;
@@ -62,8 +55,13 @@ import obj.organics3d.SoftSphereWrap;
 import obj.organics3d.UndulatingPlane;
 import obj.organics3d.WavyCapsule;
 
+/**
+  Main application - orchestrates engine, rendering, camera, and screenshot flow.
+  UI handled by ShapePanel, shape registry by ShapeCatalog, screenshots by Screenshot utility.
+**/
 class Main extends App {
 
+  // Core rendering
   var fx : ScreenFx<BaseRaymarchShader>;
   var shader : BaseRaymarchShader;
   var viewportTexture : Texture;
@@ -71,47 +69,51 @@ class Main extends App {
   var copy : Copy;
   var t : Float = 0.0;
   var distance : Float = 5.0;
+
+  // Shape management
+  var shapePanel : ShapePanel;
+  var shapeCategories : Array<ShapeCategory>;
+  var shapeNames : Array<String>;
+  var currentShape : Int = 0;
+
+  // Screenshot flow
   var pendingScreenshot = false;
   var autoScreenshot = false;
   var screenshotDir : String;
-
-  var currentShape : Int = 0;
-  var shapeNames : Array<String>;
-  var shapeCategories : Array<{name:String, shapes:Array<String>, pkg:String}>;
-  var uiPanel : Object;
-  var scrollContainer : Object;
-  var scrollOffset : Float = 0;
-  var maxScroll : Float = 0;
-  var shapeButtons : Array<{bg:Graphics, label:Text, interactive:Interactive}>;
-  var panelWidth : Int = 250;
-  var panelX : Float = 0;
-  var viewportWidth : Int = 0;
-  var viewportHeight : Int = 0;
   var shapesToScreenshot : Array<String> = [];
   var currentScreenshotIndex : Int = 0;
   var framesBeforeScreenshot : Int = 0;
+
+  // Viewport dimensions
+  var viewportWidth : Int = 0;
+  var viewportHeight : Int = 0;
 
   static function main() {
     new Main();
   }
 
   override function init() {
-    // Scan shapes first so we can parse shape-specific args
-    scanShapesFromFolder();
+    // Load shape catalog
+    shapeCategories = ShapeCatalog.defaultCategories();
+    shapeNames = ShapeCatalog.shapeNames(shapeCategories);
+    trace("Loaded " + shapeNames.length + " shapes in " + shapeCategories.length + " categories");
 
-    shader = createShaderForShape("Box"); // Start with Box
+    // Setup initial shader
+    shader = ShapeCatalog.createShaderForShape("Box", shapeCategories);
     fx = new ScreenFx(shader);
     copy = new Copy();
     Window.getInstance().addEventTarget(onEvent);
 
-    var progDir = Path.directory(Sys.programPath());
-    var baseDir = Path.normalize(Path.join([progDir, "..", ".."])); // up from bin/ to HEAPS3D
-    screenshotDir = Path.join([baseDir, "sc"]);
-
+    // Setup screenshot directory
+    screenshotDir = Screenshot.defaultDirFromProgramPath(Sys.programPath());
     trace("Program path: " + Sys.programPath());
     trace("Screenshot directory: " + screenshotDir);
 
-    // Parse command line args
+    // Parse command line args for screenshot mode
+    parseCommandLineArgs();
+  }
+
+  function parseCommandLineArgs():Void {
     var screenshotMode = false;
     var requestedShapes : Array<String> = [];
 
@@ -121,7 +123,7 @@ class Main extends App {
         trace("Auto-screenshot enabled via --sc flag");
       } else if (StringTools.startsWith(arg, "--")) {
         // Check if this arg matches any shape name (case-insensitive)
-        var shapeName = arg.substring(2); // Remove "--" prefix
+        var shapeName = arg.substring(2);
         for (name in shapeNames) {
           if (name.toLowerCase() == shapeName.toLowerCase()) {
             requestedShapes.push(name);
@@ -141,14 +143,11 @@ class Main extends App {
       // Switch to first requested shape
       var firstShapeIndex = shapeNames.indexOf(shapesToScreenshot[0]);
       if (firstShapeIndex >= 0) {
-        currentShape = firstShapeIndex;
-        shader = createShaderForShape(shapeNames[currentShape]);
-        fx.dispose();
-        fx = new ScreenFx(shader);
+        selectShape(firstShapeIndex);
       }
 
       pendingScreenshot = true;
-      framesBeforeScreenshot = 3; // Wait a few frames for shader to settle
+      framesBeforeScreenshot = 3;
       trace("Screenshot sequence: " + shapesToScreenshot.join(", "));
     } else if (screenshotMode) {
       // Just --sc without shapes: screenshot current shape
@@ -160,227 +159,17 @@ class Main extends App {
 
   override function onResize() {
     super.onResize();
-    if (s2d != null) {
-      panelX = s2d.width - panelWidth;
-      if (uiPanel != null) initUI();
+    if (shapePanel != null) {
+      shapePanel.onResize(s2d.width);
     }
   }
 
-  function scanShapesFromFolder() {
-    // All shapes hardcoded at compile time from obj/ folder
-    useDefaultShapes();
-    trace("Loaded " + shapeNames.length + " shapes in " + shapeCategories.length + " categories");
-  }
-
-  function useDefaultShapes() {
-    shapeCategories = [
-      {name: "Primitives", shapes: ["Box", "Capsule", "Cone", "Cylinder", "Ellipsoid", "Plane", "Pyramid", "Sphere", "Torus"], pkg: "obj.primitives"},
-      {name: "2D Primitives", shapes: ["Box2D", "Circle", "Heart", "RoundedBox2D", "Star"], pkg: "obj.primitives2d"},
-      {name: "Derivates", shapes: ["HalfCapsule", "HoledPlane", "HollowBox", "HollowSphere", "QuarterTorus", "ShellCylinder"], pkg: "obj.derivates"},
-      {name: "2D Organics", shapes: ["FlowerPetalRing", "LeafPair", "LeafSpiral", "LotusFringe", "OrnateKnot", "SpiralVine", "VineCurl"], pkg: "obj.organics2d"},
-      {name: "3D Organic", shapes: ["BlobbyCluster", "BubbleCrown", "BulbTreeCrown", "DripCone", "JellyDonut", "KnotTube", "MeltedBox", "PuffyCross", "RibbonTwist", "SoftSphereWrap", "UndulatingPlane", "WavyCapsule"], pkg: "obj.organics3d"}
-    ];
-
-    shapeNames = [];
-    for (cat in shapeCategories) {
-      for (shape in cat.shapes) {
-        shapeNames.push(shape);
-      }
-    }
-  }
-
-  function initUI() {
-    // Clear previous UI if exists
-    if (uiPanel != null) {
-      s2d.removeChildren();
-      shapeButtons = [];
-    }
-
-    // Scan obj/ folder for shapes
-    scanShapesFromFolder();
-
-    var font = hxd.res.DefaultFont.get();
-    var panelHeight = Std.int(s2d.height);
-
-    // Main panel background
-    var panelBg = new Graphics(s2d);
-    panelBg.beginFill(0x1a1a1a, 0.95);
-    panelBg.drawRect(0, 0, panelWidth, panelHeight);
-    panelBg.endFill();
-    panelBg.x = panelX;
-
-    // Title section
-    var titleBg = new Graphics(s2d);
-    titleBg.beginFill(0x333333);
-    titleBg.drawRect(0, 0, panelWidth, 60);
-    titleBg.endFill();
-    titleBg.x = panelX;
-
-    var title = new Text(font, s2d);
-    title.text = "SDF SHAPES";
-    title.textColor = 0xFFFFFF;
-    title.scale(1.8);
-    title.x = panelX + 15;
-    title.y = 18;
-
-    // Scrollable shape list container with masking
-    var scrollAreaHeight = panelHeight - 230; // Leave space for title and help
-    var scrollMask = new Mask(panelWidth - 20, scrollAreaHeight, s2d);
-    scrollMask.x = panelX + 10;
-    scrollMask.y = 70;
-
-    scrollContainer = new Object(scrollMask);
-    scrollContainer.x = 0;
-    scrollContainer.y = 0;
-
-    shapeButtons = [];
-    var btnWidth = panelWidth - 30;
-    var yPos = 0.0;
-    var shapeIndex = 0;
-
-    // Build shape list with category headers
-    for (category in shapeCategories) {
-      // Category header
-      var header = new Text(font, scrollContainer);
-      header.text = category.name.toUpperCase();
-      header.textColor = 0xFFFFFF;
-      header.scale(1.1);
-      header.x = 15;
-      header.y = yPos + 5;
-      yPos += 30;
-
-      // Category shapes
-      for (shapeName in category.shapes) {
-        var btn = new Object(scrollContainer);
-        btn.y = yPos;
-        btn.x = 15;
-
-        var bg = new Graphics(btn);
-        bg.beginFill(shapeIndex == currentShape ? 0x444444 : 0x2a2a2a);
-        bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-        bg.endFill();
-
-        var label = new Text(font, btn);
-        label.text = shapeName;
-        label.textColor = shapeIndex == currentShape ? 0xFFFF00 : 0xCCCCCC;
-        label.scale(1.3);
-        label.x = 12;
-        label.y = 12;
-
-        var interactive = new Interactive(btnWidth, 45, btn);
-        interactive.backgroundColor = 0x555555;
-        interactive.alpha = 0;
-
-        final btnIndex = shapeIndex;
-        interactive.onClick = function(_) {
-          selectShape(btnIndex);
-          refreshShapeButtons();
-        };
-        interactive.onOver = function(_) {
-          bg.clear();
-          bg.beginFill(0x555555);
-          bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-          bg.endFill();
-        };
-        interactive.onOut = function(_) {
-          bg.clear();
-          bg.beginFill(btnIndex == currentShape ? 0x444444 : 0x2a2a2a);
-          bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-          bg.endFill();
-        };
-
-        shapeButtons.push({bg: bg, label: label, interactive: interactive});
-        yPos += 50;
-        shapeIndex++;
-      }
-    }
-
-    var scrollAreaHeight = panelHeight - 230;
-    maxScroll = Math.max(0, yPos - scrollAreaHeight);
-
-    uiPanel = new Object(s2d); // Mark UI as initialized
-
-    // Help section at bottom
-    var helpY = panelHeight - 160;
-    var helpBg = new Graphics(s2d);
-    helpBg.beginFill(0x2a2a2a);
-    helpBg.drawRect(0, 0, panelWidth, 160);
-    helpBg.endFill();
-    helpBg.x = panelX;
-    helpBg.y = helpY;
-
-    var helpTitle = new Text(font, s2d);
-    helpTitle.text = "CONTROLS";
-    helpTitle.textColor = 0xCCCCCC;
-    helpTitle.scale(1.2);
-    helpTitle.x = panelX + 15;
-    helpTitle.y = helpY + 15;
-
-    var helpLines = [
-      "Click: Select shape",
-      "UP/DOWN: Navigate",
-      "Mouse wheel: Scroll/Zoom",
-      "F12 or P: Screenshot"
-    ];
-
-    var lineY = helpY + 45;
-    for (line in helpLines) {
-      var helpText = new Text(font, s2d);
-      helpText.text = line;
-      helpText.textColor = 0x999999;
-      helpText.scale(0.95);
-      helpText.x = panelX + 15;
-      helpText.y = lineY;
-      lineY += 22;
-    }
-  }
-
-  function refreshShapeButtons() {
-    var btnWidth = panelWidth - 30;
-    for (i in 0...shapeButtons.length) {
-      var btn = shapeButtons[i];
-      var isSelected = i == currentShape;
-
-      btn.bg.clear();
-      btn.bg.beginFill(isSelected ? 0x444444 : 0x2a2a2a);
-      btn.bg.drawRoundedRect(0, 0, btnWidth, 45, 5);
-      btn.bg.endFill();
-
-      btn.label.textColor = isSelected ? 0xFFFF00 : 0xCCCCCC;
-    }
-  }
-
-  function createShaderForShape(name:String):BaseRaymarchShader {
-    // Find which category this shape belongs to
-    for (cat in shapeCategories) {
-      for (shapeName in cat.shapes) {
-        if (shapeName == name) {
-          // Build fully qualified class name: pkg.ShapeNameShader
-          var className = cat.pkg + "." + name + "Shader";
-          var cls = Type.resolveClass(className);
-
-          if (cls != null) {
-            var instance = Type.createInstance(cls, []);
-            trace("Created shader: " + className);
-            return cast instance;
-          } else {
-            trace("ERROR: Could not resolve shader class: " + className);
-          }
-        }
-      }
-    }
-
-    // Fallback to Sphere if not found
-    trace("WARNING: Shape '" + name + "' not found, using SphereShader as fallback");
-    return new SphereShader();
-  }
-
-  function selectShape(index:Int) {
+  function selectShape(index:Int):Void {
     if (index == currentShape) return;
     currentShape = index;
 
     // Create new shader for selected shape
-    shader = createShaderForShape(shapeNames[currentShape]);
+    shader = ShapeCatalog.createShaderForShape(shapeNames[currentShape], shapeCategories);
     shader.time = t;
     shader.resolution.set(viewportWidth, viewportHeight);
 
@@ -396,6 +185,11 @@ class Main extends App {
     fx = new ScreenFx(shader);
 
     trace("Selected shape: " + shapeNames[currentShape]);
+
+    // Update UI if it exists
+    if (shapePanel != null) {
+      shapePanel.setCurrentShape(index);
+    }
   }
 
   override function update(dt:Float) {
@@ -404,17 +198,15 @@ class Main extends App {
 
   override function render(e:h3d.Engine) {
     // Initialize UI on first render when we have proper dimensions
-    if (uiPanel == null) {
-      viewportWidth = e.width - panelWidth;
+    if (shapePanel == null) {
+      viewportWidth = e.width - 250; // panelWidth
       viewportHeight = e.height;
-      panelX = viewportWidth;
-      initUI();
+      shapePanel = new ShapePanel(s2d, shapeCategories, currentShape, selectShape);
     }
 
     // Update viewport dimensions
-    viewportWidth = e.width - panelWidth;
+    viewportWidth = e.width - shapePanel.panelWidth;
     viewportHeight = e.height;
-    panelX = viewportWidth;
 
     // Update shader uniforms every frame
     shader.time = t;
@@ -440,9 +232,7 @@ class Main extends App {
     // Handle frame delay before screenshot
     if (pendingScreenshot && framesBeforeScreenshot > 0) {
       framesBeforeScreenshot--;
-      if (framesBeforeScreenshot == 0) {
-        // Ready to capture now
-      } else {
+      if (framesBeforeScreenshot > 0) {
         // Still waiting, just render normally
         e.clear(0x000000);
         copy.apply(viewportTexture, null);
@@ -468,7 +258,7 @@ class Main extends App {
       s2d.render(e);
       e.popTarget();
 
-      captureScreenshot(e);
+      captureScreenshot();
 
       // Display to screen
       e.clear(0x000000);
@@ -478,6 +268,54 @@ class Main extends App {
       e.clear(0x000000);
       copy.apply(viewportTexture, null);
       s2d.render(e);
+    }
+  }
+
+  function captureScreenshot():Void {
+    pendingScreenshot = false;
+
+    try {
+      trace("Attempting screenshot capture...");
+
+      // Generate filename based on shape name if in sequence mode
+      var fileName : String;
+      if (shapesToScreenshot.length > 0 && currentScreenshotIndex < shapesToScreenshot.length) {
+        fileName = shapesToScreenshot[currentScreenshotIndex] + ".png";
+      } else {
+        fileName = "shot_" + Std.int(t * 1000) + ".png";
+      }
+
+      // Use Screenshot utility to save texture
+      Screenshot.saveWithName(screenshotTexture, screenshotDir, fileName, false);
+
+      // Handle screenshot sequence
+      if (shapesToScreenshot.length > 0) {
+        currentScreenshotIndex++;
+
+        if (currentScreenshotIndex < shapesToScreenshot.length) {
+          // Move to next shape in sequence
+          var nextShapeName = shapesToScreenshot[currentScreenshotIndex];
+          var nextShapeIndex = shapeNames.indexOf(nextShapeName);
+
+          if (nextShapeIndex >= 0) {
+            trace("Moving to next shape: " + nextShapeName);
+            selectShape(nextShapeIndex);
+
+            // Queue next screenshot
+            pendingScreenshot = true;
+            framesBeforeScreenshot = 3;
+          }
+        } else {
+          // Sequence complete
+          trace("Screenshot sequence complete!");
+          if (autoScreenshot) Sys.exit(0);
+        }
+      } else if (autoScreenshot) {
+        // Single screenshot mode
+        Sys.exit(0);
+      }
+    } catch (e:Dynamic) {
+      trace("ERROR capturing screenshot: " + e);
     }
   }
 
@@ -512,101 +350,24 @@ class Main extends App {
   }
 
   function onEvent(e:Event):Void {
+    // Let ShapePanel handle UI events first
+    if (shapePanel != null && shapePanel.handleEvent(e)) {
+      return; // Event consumed by panel
+    }
+
+    // Handle non-UI events
     switch (e.kind) {
       case EKeyDown:
         if (e.keyCode == Key.F12 || e.keyCode == Key.P) {
           trace("Screenshot key pressed (F12 or P)");
-          pendingScreenshot = true; // F12 primary, P fallback
-        } else if (e.keyCode == Key.UP || e.keyCode == Key.LEFT) {
-          selectShape((currentShape - 1 + shapeNames.length) % shapeNames.length);
-          refreshShapeButtons();
-        } else if (e.keyCode == Key.DOWN || e.keyCode == Key.RIGHT) {
-          selectShape((currentShape + 1) % shapeNames.length);
-          refreshShapeButtons();
-        } else if (e.keyCode >= Key.NUMBER_0 && e.keyCode <= Key.NUMBER_9) {
-          var num = e.keyCode - Key.NUMBER_0;
-          if (num < shapeNames.length) {
-            selectShape(num);
-            refreshShapeButtons();
-          }
+          pendingScreenshot = true;
+          framesBeforeScreenshot = 3;
         }
       case EWheel:
-        // Check if mouse is over UI panel
-        var mouseX = s2d.mouseX;
-        if (mouseX > panelX) {
-          // Scroll panel
-          scrollOffset = clamp(scrollOffset - e.wheelDelta * 30, 0, maxScroll);
-          scrollContainer.y = -scrollOffset;
-        } else {
-          // Zoom camera
-          var zoomFactor = Math.pow(0.9, e.wheelDelta);
-          distance = clamp(distance * zoomFactor, 2.0, 12.0);
-        }
+        // Zoom camera (if not over UI panel - already checked by shapePanel.handleEvent)
+        var zoomFactor = Math.pow(0.9, e.wheelDelta);
+        distance = clamp(distance * zoomFactor, 2.0, 12.0);
       default:
-    }
-  }
-
-  function captureScreenshot(engine:h3d.Engine) {
-    pendingScreenshot = false;
-    try {
-      trace("Attempting screenshot capture...");
-
-      if (!FileSystem.exists(screenshotDir)) {
-        trace("Creating screenshot directory: " + screenshotDir);
-        FileSystem.createDirectory(screenshotDir);
-      }
-
-      // Capture pixels from screenshot texture (full frame with UI)
-      var pix = screenshotTexture.capturePixels();
-      pix.convert(PixelFormat.RGBA);
-
-      // Generate filename based on shape name if in sequence mode
-      var fileName : String;
-      if (shapesToScreenshot.length > 0 && currentScreenshotIndex < shapesToScreenshot.length) {
-        var shapeName = shapesToScreenshot[currentScreenshotIndex];
-        fileName = shapeName + ".png";
-      } else {
-        var stamp = Std.int(t * 1000);
-        fileName = "shot_" + stamp + ".png";
-      }
-
-      var fullPath = Path.join([screenshotDir, fileName]);
-
-      trace("Saving screenshot to: " + fullPath);
-      File.saveBytes(fullPath, pix.toPNG());
-      trace("Screenshot saved successfully!");
-
-      // Handle screenshot sequence
-      if (shapesToScreenshot.length > 0) {
-        currentScreenshotIndex++;
-
-        if (currentScreenshotIndex < shapesToScreenshot.length) {
-          // Move to next shape in sequence
-          var nextShapeName = shapesToScreenshot[currentScreenshotIndex];
-          var nextShapeIndex = shapeNames.indexOf(nextShapeName);
-
-          if (nextShapeIndex >= 0) {
-            trace("Moving to next shape: " + nextShapeName);
-            currentShape = nextShapeIndex;
-            shader = createShaderForShape(shapeNames[currentShape]);
-            fx.dispose();
-            fx = new ScreenFx(shader);
-
-            // Queue next screenshot (will happen after a few frames to let shader settle)
-            pendingScreenshot = true;
-            framesBeforeScreenshot = 3;
-          }
-        } else {
-          // Sequence complete
-          trace("Screenshot sequence complete!");
-          if (autoScreenshot) Sys.exit(0);
-        }
-      } else if (autoScreenshot) {
-        // Single screenshot mode
-        Sys.exit(0);
-      }
-    } catch (e:Dynamic) {
-      trace("ERROR capturing screenshot: " + e);
     }
   }
 

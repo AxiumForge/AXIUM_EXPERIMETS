@@ -23,6 +23,17 @@
   - Named output files (Torus.png, Box2D.png) instead of timestamps
   - 3-frame delay between shader swaps for proper rendering
 
+### Refactored
+- **Main.hx modular architecture** - Extracted UI, shape management, and utilities into separate modules:
+  - **ShapePanel.hx** - All UI logic (panel, scrolling, shape selection, keyboard/mouse events)
+  - **ShapeCatalog.hx** - Shape registry and shader factory (defaultCategories, shapeNames, createShaderForShape)
+  - **Screenshot.hx** - Screenshot utilities with sequence support (saveWithName, saveTexture, saveSequenceFrame)
+  - **Main.hx** - Now orchestrates engine, rendering, camera, and screenshot flow (~360 lines, down from 500+)
+- **Screenshot.hx integration** - Main.hx now uses Screenshot utility methods instead of inline pixel capture code
+  - Added `saveWithName()` method for custom filename screenshots (e.g., "Torus.png", "Box2D.png")
+  - Removed inline pixel capture, PNG conversion, and file saving code
+  - Cleaner separation of concerns between rendering and file I/O
+
 ### Changed
 - **Shape file structure** - From nested classes to proper module pattern with two top-level classes:
   ```haxe
@@ -75,6 +86,9 @@
 - ✅ Named screenshot files generated correctly (Torus.png, Box2D.png, etc.)
 - ✅ 2D shapes rendering correctly verified (Box2D, Circle, Heart, LeafPair all render as proper 2D shapes)
 - ✅ All 39 shapes compile and load successfully with new package structure
+- ✅ Refactored Main.hx builds and runs successfully
+- ✅ ShapePanel.hx UI integration functional (panel, scrolling, selection)
+- ✅ Screenshot.hx integration tested (`--sc --sphere --torus` generates correct files with Screenshot.saveWithName())
 
 ### Technical Details
 

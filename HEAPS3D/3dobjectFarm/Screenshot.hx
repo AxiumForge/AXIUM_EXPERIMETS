@@ -80,4 +80,29 @@ class Screenshot {
     File.saveBytes(fullPath, pix.toPNG());
     return fullPath;
   }
+
+  /**
+    Save a texture with a custom filename (e.g., for shape-based naming like "Torus.png").
+    - texture: render target to save
+    - dir: destination directory
+    - fileName: complete filename including extension
+    - autoExit: if true, calls Sys.exit(0) after saving
+    Returns the full path to the saved file.
+  **/
+  public static function saveWithName(texture:Texture, dir:String, fileName:String, autoExit:Bool = false):String {
+    ensureDir(dir);
+
+    var pix:Pixels = texture.capturePixels();
+    pix.convert(PixelFormat.RGBA);
+
+    var fullPath = Path.join([dir, fileName]);
+    File.saveBytes(fullPath, pix.toPNG());
+    trace("Screenshot saved: " + fullPath);
+
+    if (autoExit) {
+      Sys.exit(0);
+    }
+
+    return fullPath;
+  }
 }

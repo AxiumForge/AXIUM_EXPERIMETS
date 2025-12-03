@@ -1,5 +1,186 @@
 # TODO
 
+## AxObjectClass Refaktorering (v0.1) - CRITICAL 🔴
+
+**Status:** Planlagt - ikke startet
+
+**Problem:**
+Nuværende klassestruktur matcher IKKE AxObjectClass standard fra docs/AxObjectClassDefvo_1.md
+
+**Nuværende struktur (FORKERT):**
+```haxe
+class Box {
+    public static var color = ...;
+    public static inline function distance(p:Vector):Float { ... }
+}
+class BoxShader extends BaseRaymarchShader {
+    static var SRC = { function map(p:Vec3):Vec4 { ... } };
+}
+```
+
+**Korrekt struktur (AxObjectClass v0.1):**
+```haxe
+class Box implements AxObjectClass {
+    public function new() {}
+    public function shader():hxsl.Shader { ... }
+    public function object():PdfObject { ... }
+}
+```
+
+---
+
+### Fase 0: Foundation (Forberedelse)
+
+- [ ] **0.1** Opret `AxObjectClass.hx` interface
+  ```haxe
+  interface AxObjectClass {
+      public function shader():hxsl.Shader;
+      public function object():PdfObject;
+  }
+  ```
+
+- [ ] **0.2** Opret `PdfObject.hx` typedef
+  ```haxe
+  typedef PdfObject = {
+      name: String,
+      sdf: { kind: String, params: Dynamic },
+      transform: { position: {x:Float,y:Float,z:Float}, ... },
+      material: { color: {r:Float,g:Float,b:Float,a:Float}, ... }
+  }
+  ```
+
+- [ ] **0.3** Beslut shader return type strategi
+  - Option A: Returnér BaseRaymarchShader instance
+  - Option B: Returnér custom shader per shape
+  - Option C: Returnér shader data som shaderen compiles fra
+
+---
+
+### Fase 1: Pilot - Konverter 1 Shape (Box)
+
+- [ ] **1.1** Backup nuværende Box.hx til Box.hx.old
+
+- [ ] **1.2** Konverter Box til AxObjectClass
+  - [ ] Fjern static color og distance()
+  - [ ] Add implements AxObjectClass
+  - [ ] Add new() constructor
+  - [ ] Add shader() metode (integrer BoxShader funktionalitet)
+  - [ ] Add object() metode (returnér PdfObject med box data)
+
+- [ ] **1.3** Opdater ShapeCatalog til at håndtere AxObjectClass
+  - [ ] Ændr createShaderForShape() til at instantiere Box og kalde shader()
+  - [ ] Test at Box loader og renderer korrekt
+
+- [ ] **1.4** Test pilot implementation
+  - [ ] Byg projekt
+  - [ ] Kør med --sc --box
+  - [ ] Verificér at Box renderer identisk med før
+
+---
+
+### Fase 2: Konverter Primitives (9 shapes)
+
+- [ ] **2.1** Capsule → AxObjectClass
+- [ ] **2.2** Cone → AxObjectClass
+- [ ] **2.3** Cylinder → AxObjectClass
+- [ ] **2.4** Ellipsoid → AxObjectClass
+- [ ] **2.5** Plane → AxObjectClass
+- [ ] **2.6** Pyramid → AxObjectClass
+- [ ] **2.7** Sphere → AxObjectClass
+- [ ] **2.8** Torus → AxObjectClass
+- [ ] **2.9** Test alle 9 primitives renderer korrekt
+
+---
+
+### Fase 3: Konverter 2D Primitives (5 shapes)
+
+- [ ] **3.1** Box2D → AxObjectClass
+- [ ] **3.2** Circle → AxObjectClass
+- [ ] **3.3** Heart → AxObjectClass
+- [ ] **3.4** RoundedBox2D → AxObjectClass
+- [ ] **3.5** Star → AxObjectClass
+- [ ] **3.6** Test alle 5 2D primitives renderer korrekt
+
+---
+
+### Fase 4: Konverter Derivates (6 shapes)
+
+- [ ] **4.1** HalfCapsule → AxObjectClass
+- [ ] **4.2** HoledPlane → AxObjectClass
+- [ ] **4.3** HollowBox → AxObjectClass
+- [ ] **4.4** HollowSphere → AxObjectClass
+- [ ] **4.5** QuarterTorus → AxObjectClass
+- [ ] **4.6** ShellCylinder → AxObjectClass
+- [ ] **4.7** Test alle 6 derivates renderer korrekt
+
+---
+
+### Fase 5: Konverter 2D Organics (7 shapes)
+
+- [ ] **5.1** FlowerPetalRing → AxObjectClass
+- [ ] **5.2** LeafPair → AxObjectClass
+- [ ] **5.3** LeafSpiral → AxObjectClass
+- [ ] **5.4** LotusFringe → AxObjectClass
+- [ ] **5.5** OrnateKnot → AxObjectClass
+- [ ] **5.6** SpiralVine → AxObjectClass
+- [ ] **5.7** VineCurl → AxObjectClass
+- [ ] **5.8** Test alle 7 2D organics renderer korrekt
+
+---
+
+### Fase 6: Konverter 3D Organics (12 shapes)
+
+- [ ] **6.1** BlobbyCluster → AxObjectClass
+- [ ] **6.2** BubbleCrown → AxObjectClass
+- [ ] **6.3** BulbTreeCrown → AxObjectClass
+- [ ] **6.4** DripCone → AxObjectClass
+- [ ] **6.5** JellyDonut → AxObjectClass
+- [ ] **6.6** KnotTube → AxObjectClass
+- [ ] **6.7** MeltedBox → AxObjectClass
+- [ ] **6.8** PuffyCross → AxObjectClass
+- [ ] **6.9** RibbonTwist → AxObjectClass
+- [ ] **6.10** SoftSphereWrap → AxObjectClass
+- [ ] **6.11** UndulatingPlane → AxObjectClass
+- [ ] **6.12** WavyCapsule → AxObjectClass
+- [ ] **6.13** Test alle 12 3D organics renderer korrekt
+
+---
+
+### Fase 7: Cleanup & Documentation
+
+- [ ] **7.1** Fjern alle .hx.old backup filer
+- [ ] **7.2** Fjern BaseRaymarchShader hvis ikke længere nødvendig
+- [ ] **7.3** Opdater Shapes.hx barrel file
+- [ ] **7.4** Opdater ShapeCatalog.hx documentation
+- [ ] **7.5** Opdater README med AxObjectClass pattern
+- [ ] **7.6** Opdater CHANGELOG med v0.1 refaktorering
+- [ ] **7.7** Test screenshot af alle 39 shapes: `--sc --<all shapes>`
+- [ ] **7.8** Commit: "Refactor all 39 shapes to AxObjectClass v0.1 standard"
+
+---
+
+### Fase 8: Future - Ax Libraries
+
+- [ ] **8.1** Design AxRaymarchLib (fælles raymarching algoritmer)
+- [ ] **8.2** Design AxMaterialLib (material evaluation)
+- [ ] **8.3** Design AxAlphaLib (alpha helpers)
+- [ ] **8.4** Design AxTexLib (procedural textures)
+- [ ] **8.5** Opdater shaderen til at bruge Ax libraries
+
+---
+
+### Estimat
+
+- **Total shapes:** 39
+- **Phases:** 0-7 (8 er future work)
+- **Critical path:** Fase 0 → Fase 1 (pilot) → beslut om fortsæt
+- **Risk:** Høj - ændrer fundamental arkitektur
+- **Recommendation:** Lav Fase 0 + Fase 1 først, test grundigt, beslut derefter
+
+---
+
+# TODO
+
 ## Alpha Transparency for SDF Shapes (2025-12-03)
 
 **Status:** Midlertidig workaround implementeret for Box shader

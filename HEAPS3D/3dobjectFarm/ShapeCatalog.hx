@@ -44,7 +44,7 @@ class ShapeCatalog {
     - AxObjectClass v0.2: *ShaderImpl (BaseRaymarchShader)
     - Legacy: Directly instantiate Shader class (for unconverted shapes)
   */
-  public static function createShaderForShape(name:String, categories:ReadOnlyArray<ShapeCategory>):BaseRaymarchShader {
+  public static function createShaderForShape(name:String, categories:ReadOnlyArray<ShapeCategory>):Dynamic {
     for (cat in categories) {
       for (shapeName in cat.shapes) {
         if (shapeName == name) {
@@ -54,9 +54,9 @@ class ShapeCatalog {
           if (shapeCls != null) {
             var shapeInstance:AxObjectClass = cast Type.createInstance(shapeCls, []);
             var shader = shapeInstance.shader();
-            // v0.2: *ShaderImpl extends BaseRaymarchShader
-            if (Std.isOfType(shader, BaseRaymarchShader)) {
-              return cast shader;
+            // v0.2/v0.3: Return any ScreenShader
+            if (Std.isOfType(shader, ScreenShader)) {
+              return shader;
             }
           }
 

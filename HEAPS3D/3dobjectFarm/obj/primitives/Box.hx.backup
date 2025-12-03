@@ -5,16 +5,15 @@ class Box implements AxObjectClass {
   public function new() {}
 
   public function shader():hxsl.Shader {
-    var s = AxDefaultShaders.sdfSceneShader();
+    var s = AxDefaultShaders.boxShader();
 
-    // Configure universal shader for Box (v0.3)
+    // Set Box-specific uniforms from object() data
     var obj = object();
     var params = obj.sdf.params;
     var mat = obj.material;
 
-    s.shapeType = 0;  // 0 = Box
-    s.shapeParam0.set(params.halfExtents.x, params.halfExtents.y, params.halfExtents.z);
-    s.shapeColor.set(mat.color.r, mat.color.g, mat.color.b);
+    s.boxSize.set(params.halfExtents.x, params.halfExtents.y, params.halfExtents.z);
+    s.boxColor.set(mat.color.r, mat.color.g, mat.color.b);
 
     return s;
   }

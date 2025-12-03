@@ -2,15 +2,24 @@ package obj.primitives2d;
 
 import h3d.Vector;
 
-class Circle {
-  public static var color = new Vector(0.2, 0.8, 0.9);
-  public static var radius = 0.6;
-  public static var center = new Vector(0.0, 0.0, 0.0);
+class Circle implements AxObjectClass {
+  public function new() {}
 
-  public static inline function distance(p:Vector):Float {
-    var dx = p.x;
-    var dz = p.z;
-    return Math.sqrt(dx * dx + dz * dz) - radius;
+  public function shader():hxsl.Shader {
+    return new CircleShader();
+  }
+
+  public function object():PdfObject {
+    return {
+      name: "Circle",
+      sdf: { kind: "custom", params: {} },
+      transform: { position: {x:0, y:0, z:0}, rotation: {x:0, y:0, z:0}, scale: {x:1, y:1, z:1} },
+      material: {
+        color: {r: 0.2, g: 0.8, b: 0.9, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
 }
 

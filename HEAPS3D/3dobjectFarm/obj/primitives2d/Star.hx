@@ -2,27 +2,24 @@ package obj.primitives2d;
 
 import h3d.Vector;
 
-class Star {
-  public static var color = new Vector(0.9, 0.8, 0.25);
-  public static var innerRadius = 0.35;
-  public static var outerRadius = 0.7;
-  public static var points = 5;
+class Star implements AxObjectClass {
+  public function new() {}
 
-  public static inline function distance(p:Vector):Float {
-    var ang = Math.atan2(p.z, p.x);
-    var r = Math.sqrt(p.x * p.x + p.z * p.z);
-    var sector = Math.PI * 2.0 / points;
-    var a = ((ang % sector) + sector) % sector - sector * 0.5;
-    var edge = Math.cos(a) * mix(outerRadius, innerRadius, step(Math.abs(a), sector * 0.25));
-    return r - edge;
+  public function shader():hxsl.Shader {
+    return new StarShader();
   }
 
-  static inline function mix(a:Float, b:Float, t:Float):Float {
-    return a + (b - a) * t;
-  }
-
-  static inline function step(x:Float, edge:Float):Float {
-    return x < edge ? 1.0 : 0.0;
+  public function object():PdfObject {
+    return {
+      name: "Star",
+      sdf: { kind: "custom", params: {} },
+      transform: { position: {x:0, y:0, z:0}, rotation: {x:0, y:0, z:0}, scale: {x:1, y:1, z:1} },
+      material: {
+        color: {r: 0.9, g: 0.8, b: 0.25, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
 }
 

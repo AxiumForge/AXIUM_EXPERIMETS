@@ -1,27 +1,19 @@
 package;
 
-import h3d.shader.ScreenShader;
-
 /**
   SdfSceneShader - Universal scene-based SDF shader (v0.3)
 
   ONE shader for ALL primitives. Data-driven rendering.
+  Extends BaseRaymarchShader for compatibility with v0.2 system.
 
   PoC version: Supports one primitive at a time via shapeType parameter.
   Future: Will support arrays of primitives for complex scenes.
 **/
-class SdfSceneShader extends ScreenShader {
+class SdfSceneShader extends BaseRaymarchShader {
   static var SRC = {
+    // Inherits from BaseRaymarchShader: time, resolution, cameraPos, cameraForward, cameraRight, cameraUp, alphaControl
 
-    @param var time : Float;
-    @param var resolution : Vec2;
-    @param var cameraPos : Vec3;
-    @param var cameraForward : Vec3;
-    @param var cameraRight : Vec3;
-    @param var cameraUp : Vec3;
-    @param var alphaControl : Float;
-
-    // Shape type and parameters
+    // Shape type and parameters (v0.3 additions)
     @param var shapeType : Int;  // 0=box, 1=sphere, 2=capsule, etc.
     @param var shapeParam0 : Vec3;  // Generic param (box: size, sphere: radius in x, etc.)
     @param var shapeParam1 : Vec3;  // Secondary param (capsule: point A, etc.)

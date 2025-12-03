@@ -22,8 +22,8 @@ import Shapes; // Barrel import - makes all 39 shape classes available for Type.
 class Main extends App {
 
   // Core rendering (v0.2/v0.3 compatible)
-  var fx : ScreenFx<Dynamic>;
-  var shader : Dynamic;  // Can be BaseRaymarchShader (v0.2) or SdfSceneShader (v0.3)
+  var fx : ScreenFx<BaseRaymarchShader>;
+  var shader : BaseRaymarchShader;  // Works with both v0.2 (*ShaderImpl) and v0.3 (SdfSceneShader)
   var viewportTexture : Texture;
   var screenshotTexture : Texture;
   var copy : Copy;
@@ -164,19 +164,15 @@ class Main extends App {
 
     // Create new shader for selected shape
     shader = ShapeCatalog.createShaderForShape(shapeNames[currentShape], shapeCategories);
-    Reflect.setField(shader, "time", t);
-    if (Reflect.hasField(shader, "resolution")) {
-      Reflect.field(shader, "resolution").set(viewportWidth, viewportHeight);
-    }
+    shader.time = t;
+    shader.resolution.set(viewportWidth, viewportHeight);
 
-    // Update camera uniforms (v0.2/v0.3 compatible via Reflect)
+    // Update camera uniforms
     var cam = computeCamera(t);
-    if (Reflect.hasField(shader, "cameraPos")) {
-      Reflect.field(shader, "cameraPos").set(cam.pos.x, cam.pos.y, cam.pos.z);
-      Reflect.field(shader, "cameraForward").set(cam.forward.x, cam.forward.y, cam.forward.z);
-      Reflect.field(shader, "cameraRight").set(cam.right.x, cam.right.y, cam.right.z);
-      Reflect.field(shader, "cameraUp").set(cam.up.x, cam.up.y, cam.up.z);
-    }
+    shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
+    shader.cameraForward.set(cam.forward.x, cam.forward.y, cam.forward.z);
+    shader.cameraRight.set(cam.right.x, cam.right.y, cam.right.z);
+    shader.cameraUp.set(cam.up.x, cam.up.y, cam.up.z);
 
     // Recreate ScreenFx with new shader
     fx.dispose();
@@ -206,14 +202,10 @@ class Main extends App {
     viewportWidth = e.width - shapePanel.panelWidth;
     viewportHeight = e.height;
 
-    // Update shader uniforms every frame (v0.2/v0.3 compatible via Reflect)
-    Reflect.setField(shader, "time", t);
-    if (Reflect.hasField(shader, "resolution")) {
-      Reflect.field(shader, "resolution").set(viewportWidth, viewportHeight);
-    }
-    if (Reflect.hasField(shader, "alphaControl")) {
-      Reflect.setField(shader, "alphaControl", alpha);
-    }
+    // Update shader uniforms every frame
+    shader.time = t;
+    shader.resolution.set(viewportWidth, viewportHeight);
+    shader.alphaControl = alpha;
 
     // Update UI alpha display
     if (shapePanel != null) {
@@ -221,12 +213,10 @@ class Main extends App {
     }
 
     var cam = computeCamera(t);
-    if (Reflect.hasField(shader, "cameraPos")) {
-      Reflect.field(shader, "cameraPos").set(cam.pos.x, cam.pos.y, cam.pos.z);
-      Reflect.field(shader, "cameraForward").set(cam.forward.x, cam.forward.y, cam.forward.z);
-      Reflect.field(shader, "cameraRight").set(cam.right.x, cam.right.y, cam.right.z);
-      Reflect.field(shader, "cameraUp").set(cam.up.x, cam.up.y, cam.up.z);
-    }
+    shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
+    shader.cameraForward.set(cam.forward.x, cam.forward.y, cam.forward.z);
+    shader.cameraRight.set(cam.right.x, cam.right.y, cam.right.z);
+    shader.cameraUp.set(cam.up.x, cam.up.y, cam.up.z);
 
     // Render 3D to viewport texture
     if (viewportTexture == null || viewportTexture.width != viewportWidth || viewportTexture.height != viewportHeight) {

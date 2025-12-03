@@ -1,11 +1,14 @@
 package obj.primitives;
 
+/**
+  Capsule - Self-contained plug & play primitive
+**/
 class Capsule implements AxObjectClass {
 
   public function new() {}
 
   public function shader():hxsl.Shader {
-    var s = AxDefaultShaders.capsuleShader();
+    var s = new CapsuleShader();
 
     var obj = object();
     var params = obj.sdf.params;
@@ -42,4 +45,41 @@ class Capsule implements AxObjectClass {
       }
     };
   }
+}
+
+/**
+  CapsuleShader - Contains ALL Capsule-specific SDF math and rendering
+**/
+class CapsuleShader extends BaseRaymarchShader {
+  static var SRC = {
+    @param var capsuleA : Vec3;
+    @param var capsuleB : Vec3;
+    @param var capsuleRadius : Float;
+    @param var capsuleColor : Vec3;
+
+    function rotateXYZ(p:Vec3, r:Vec3):Vec3 {
+      var cx = cos(r.x); var sx = sin(r.x);
+      var cy = cos(r.y); var sy = sin(r.y);
+      var cz = cos(r.z); var sz = sin(r.z);
+
+      var rx = p;
+      rx = vec3(rx.x, rx.y * cx - rx.z * sx, rx.y * sx + rx.z * cx);
+      rx = vec3(rx.x * cy + rx.z * sy, rx.y, -rx.x * sy + rx.z * cy);
+      rx = vec3(rx.x * cz - rx.y * sz, rx.x * sz + rx.y * cz, rx.z);
+      return rx;
+    }
+
+    function sdfCapsule(p:Vec3, a:Vec3, b:Vec3, r:Float):Float {
+      var pa = p - a;
+      var ba = b - a;
+      var h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+      return length(pa - ba * h) - r;
+    }
+
+    function map(p:Vec3):Vec4 {
+      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
+      var dist = sdfCapsule(pr, capsuleA, capsuleB, capsuleRadius);
+      return vec4(dist, capsuleColor.x, capsuleColor.y, capsuleColor.z);
+    }
+  };
 }

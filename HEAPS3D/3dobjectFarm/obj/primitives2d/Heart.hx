@@ -2,15 +2,24 @@ package obj.primitives2d;
 
 import h3d.Vector;
 
-class Heart {
-  public static var color = new Vector(0.9, 0.3, 0.35);
-  public static var scale = 1.0;
+class Heart implements AxObjectClass {
+  public function new() {}
 
-  public static inline function distance(p:Vector):Float {
-    var x = p.x * scale;
-    var y = p.z * scale;
-    var a = x * x + y * y - 1.0;
-    return (a * a * a - x * x * y * y * y) / (scale * 3.0);
+  public function shader():hxsl.Shader {
+    return new HeartShader();
+  }
+
+  public function object():PdfObject {
+    return {
+      name: "Heart",
+      sdf: { kind: "custom", params: {} },
+      transform: { position: {x:0, y:0, z:0}, rotation: {x:0, y:0, z:0}, scale: {x:1, y:1, z:1} },
+      material: {
+        color: {r: 0.9, g: 0.3, b: 0.35, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
 }
 

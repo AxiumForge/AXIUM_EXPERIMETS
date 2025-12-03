@@ -1,30 +1,80 @@
 # TODO
 
-## AxObjectClass v0.3 (scene-based) — Kritisk
-- [ ] Hold `docs/AxObjectClassDef_V0_3.md` i sync med `docs/AxObjectClassDef_V0_3_REFACTOR0_2.md`.
-- [ ] Implementer én universel shader (`SdfSceneShader`) med scene-data fra runtime.
-- [ ] Flyt SDF/scene/math til `AxRaymarchLib`, materialer til `AxMaterialLib`, og lad `AxDefaultShaders` kun returnere scene-shaderen.
-- [ ] Udvid `PdfObject` til arrays af primitives/materialer/transforms (Box som proof-of-concept).
-- [ ] Understøt uniform/buffer upload i runtime (prim types/params, material ids, transforms).
-- [ ] Migrér 9 primitives til v0.3; fjern legacy `*ShaderImpl` fabriksmetoder.
-- [ ] Migrér resterende 30 former til v0.3.
-- [ ] Verificer shader swapping og performance; opdater docs/CHANGELOG.
-- [ ] Dokumentér implementeringsplan (milestones for shaders/libs/runtime upload).
-- [ ] Track og udfør kodeopgaver: SdfSceneShader, AxRaymarchLib, AxMaterialLib, AxDefaultShaders (single entry), PdfObject-udvidelse, runtime uniform upload, ShapeCatalog/shape migration.
+## AxObjectClass Self-Contained Pattern (v0.4 - CURRENT) — Kritisk
+NEW ARCHITECTURE: Each shape file contains BOTH AxObjectClass implementation AND its own shader class.
+- BaseRaymarchShader = world shader only (raymarching, lighting, camera)
+- Each shape = 100% plug & play, NO dependencies on centralized shader libraries
+
+### Completed
+- [x] Box.hx - self-contained with BoxShader class (template pattern)
+
+### Primitives to Convert (8/9 remaining)
+- [ ] Capsule.hx - add CapsuleShader class with sdfCapsule + rotateXYZ
+- [ ] Cone.hx - add ConeShader class with sdfCone + rotateXYZ
+- [ ] Cylinder.hx - add CylinderShader class with sdfCylinder + rotateXYZ
+- [ ] Ellipsoid.hx - add EllipsoidShader class with sdfEllipsoid + rotateXYZ
+- [ ] Plane.hx - add PlaneShader class with sdfPlane + rotateXYZ
+- [ ] Pyramid.hx - add PyramidShader class with sdfPyramid + rotateXYZ
+- [ ] Sphere.hx - add SphereShader class with sdfSphere + rotateXYZ
+- [ ] Torus.hx - add TorusShader class with sdfTorus + rotateXYZ
+
+### 2D Primitives to Convert (5)
+- [ ] Box2D.hx - add Box2DShader class
+- [ ] Circle.hx - add CircleShader class
+- [ ] Heart.hx - add HeartShader class
+- [ ] RoundedBox2D.hx - add RoundedBox2DShader class
+- [ ] Star.hx - add StarShader class
+
+### Derivates to Convert (6)
+- [ ] HalfCapsule.hx - add HalfCapsuleShader class
+- [ ] HoledPlane.hx - add HoledPlaneShader class
+- [ ] HollowBox.hx - add HollowBoxShader class
+- [ ] HollowSphere.hx - add HollowSphereShader class
+- [ ] QuarterTorus.hx - add QuarterTorusShader class
+- [ ] ShellCylinder.hx - add ShellCylinderShader class
+
+### 2D Organics to Convert (7)
+- [ ] FlowerPetalRing.hx
+- [ ] LeafPair.hx
+- [ ] LeafSpiral.hx
+- [ ] LotusFringe.hx
+- [ ] OrnateKnot.hx
+- [ ] SpiralVine.hx
+- [ ] VineCurl.hx
+
+### 3D Organics to Convert (12)
+- [ ] BlobbyCluster.hx
+- [ ] BubbleCrown.hx
+- [ ] BulbTreeCrown.hx
+- [ ] DripCone.hx
+- [ ] JellyDonut.hx
+- [ ] KnotTube.hx
+- [ ] MeltedBox.hx
+- [ ] PuffyCross.hx
+- [ ] RibbonTwist.hx
+- [ ] SoftSphereWrap.hx
+- [ ] UndulatingPlane.hx
+- [ ] WavyCapsule.hx
+
+### Cleanup After All Conversions (DELETE ~360 lines)
+- [ ] DELETE AxDefaultShaders.hx - factory methods + 9 *ShaderImpl classes moved into shape files
+- [ ] DELETE AxRaymarchLib.hx - SDF functions copied into each shape that uses them
+- [ ] DELETE SdfSceneShader.hx - replaced by individual shape shaders (BoxShader, SphereShader, etc.)
+- [ ] DELETE AxMaterialLib.hx - redundant, functions already in BaseRaymarchShader
+- [ ] UPDATE ShapeCatalog.hx - remove v0.3 fallback code if needed
+- [ ] UPDATE docs/AxObjectClassDef_V0_3_REFACTOR0_2.md - document actual implemented pattern
 
 ## Alpha / Transparency
-- [ ] Undersøg ægte alpha i ScreenShader/ScreenFx; nuværende workaround blander mod baggrund og outputter alpha = 1.
-- [ ] Afklar Heaps-blending (RT format, blend state) eller definér fast mix-workflow og dokumentér det.
-
-## LayeredScene transparency
-- [ ] Fix hul-områder (sort) for 2D SDF patterns på 3D bokse; undersøg GL_BLEND/format eller alternativ løsning.
+- [x] Fixed alpha support for all shapes via BaseRaymarchShader.fragment() using mix(background, shaded, alphaControl)
 
 ## Backlog (3dobjectFarm)
-- [ ] Shape blending/morphing mellem former.
-- [ ] Parameter controls i UI per shape (size/radius m.m.).
-- [ ] Export galleri-screenshots af alle 39 shapes; performanceprofil ved mange shape-skift.
-- [ ] Opdater `docs/heaps3dscene.md` med nuværende modulære arkitektur; fjern gamle SDFObjectFarmShader-filer.
-- [ ] UI: animation on/off + orbit fallback; global light strength up/down.
+- [ ] Shape blending/morphing mellem former
+- [ ] Parameter controls i UI per shape (size/radius m.m.)
+- [ ] Export galleri-screenshots af alle 39 shapes
+- [ ] Performanceprofil ved mange shape-skift
+- [ ] Opdater `docs/heaps3dscene.md` med self-contained arkitektur
+- [ ] UI: animation on/off + orbit fallback; global light strength up/down
 
 ## Noter
-- Tjek HEAPS3D/3dobjectFarm/ISSUES løbende.
+- Tjek HEAPS3D/3dobjectFarm/ISSUES løbende
+- Box.hx er template for alle andre shapes: 2 classes i samme fil (Shape + ShapeShader extends BaseRaymarchShader)

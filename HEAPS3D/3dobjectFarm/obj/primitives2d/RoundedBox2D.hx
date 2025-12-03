@@ -2,18 +2,24 @@ package obj.primitives2d;
 
 import h3d.Vector;
 
-class RoundedBox2D {
-  public static var color = new Vector(0.65, 0.7, 0.2);
-  public static var halfExtents = new Vector(0.8, 0.0, 0.5);
-  public static var radius = 0.15;
-  public static var center = new Vector(0.0, 0.0, 0.0);
+class RoundedBox2D implements AxObjectClass {
+  public function new() {}
 
-  public static inline function distance(p:Vector):Float {
-    var qx = Math.abs(p.x) - (halfExtents.x - radius);
-    var qz = Math.abs(p.z) - (halfExtents.z - radius);
-    var ax = Math.max(qx, 0.0);
-    var az = Math.max(qz, 0.0);
-    return Math.sqrt(ax * ax + az * az) - radius + Math.min(Math.max(qx, qz), 0.0);
+  public function shader():hxsl.Shader {
+    return new RoundedBox2DShader();
+  }
+
+  public function object():PdfObject {
+    return {
+      name: "RoundedBox2D",
+      sdf: { kind: "custom", params: {} },
+      transform: { position: {x:0, y:0, z:0}, rotation: {x:0, y:0, z:0}, scale: {x:1, y:1, z:1} },
+      material: {
+        color: {r: 0.65, g: 0.7, b: 0.2, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
 }
 

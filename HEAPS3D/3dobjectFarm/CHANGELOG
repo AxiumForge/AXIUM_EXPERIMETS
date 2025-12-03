@@ -1,6 +1,50 @@
 # AXIUM_EXPERIMENTS Changelog
 
-## 2025-12-03 - AxObjectClass v0.1 Foundation + Box Pilot Implementation
+## 2025-12-03 - AxObjectClass v0.1: Fase 0+1+2 Complete (9/39 shapes)
+
+### Summary
+Completed foundation, pilot, and all 9 primitives conversion to AxObjectClass v0.1 standard.
+This establishes the MODEL PATTERN for all PROCEDURAL/GENERATIVE SDF shapes.
+
+---
+
+## 2025-12-03 - AxObjectClass v0.1 Fase 2: Primitives Conversion (8 shapes)
+
+### Converted - All Primitives to AxObjectClass v0.1
+- **obj/primitives/Capsule.hx** - Line segment with spherical caps
+- **obj/primitives/Cone.hx** - Circular cone primitive
+- **obj/primitives/Cylinder.hx** - Circular cylinder primitive
+- **obj/primitives/Ellipsoid.hx** - Stretched sphere primitive
+- **obj/primitives/Plane.hx** - Infinite plane primitive
+- **obj/primitives/Pyramid.hx** - Square pyramid primitive
+- **obj/primitives/Sphere.hx** - Perfect sphere primitive
+- **obj/primitives/Torus.hx** - Donut-shaped primitive
+
+All follow Box reference implementation:
+- Implements `AxObjectClass` interface
+- `new()` constructor for instance-based pattern
+- `shader()` method returning shader instance
+- `object()` method returning PdfObject metadata
+- Shader classes unchanged (extend BaseRaymarchShader)
+
+### Testing - Fase 2 Validation
+- ✅ All 9 primitives compile successfully
+- ✅ All 9 primitives render correctly (--sc --box --capsule --cone --cylinder --ellipsoid --plane --pyramid --sphere --torus)
+- ✅ Visual verification: all shapes display identically to before conversion
+- ✅ ShapeCatalog hybrid system works seamlessly (9 AxObjectClass + 30 legacy)
+
+### Progress
+- **Converted**: 9/39 shapes (23%)
+  - ✅ Primitives: 9/9 (Box, Capsule, Cone, Cylinder, Ellipsoid, Plane, Pyramid, Sphere, Torus)
+- **Remaining**: 30/39 shapes (77%)
+  - 2D Primitives: 5 shapes
+  - Derivates: 6 shapes
+  - 2D Organics: 7 shapes
+  - 3D Organic: 12 shapes
+
+---
+
+## 2025-12-03 - AxObjectClass v0.1 Fase 0+1: Foundation + Box Pilot
 
 ### Added - AxObjectClass Standard
 - **AxObjectClass.hx interface** - Formal contract for all PROCEDURAL/GENERATIVE SDF shapes

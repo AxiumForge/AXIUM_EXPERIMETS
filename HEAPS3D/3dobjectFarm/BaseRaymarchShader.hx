@@ -98,15 +98,19 @@ class BaseRaymarchShader extends ScreenShader {
       var p = rm.xyz;
       var tHit = rm.w;
 
+      var g = 0.12 + 0.12 * uv.y;
+      var background = vec3(g, g * 1.15, g * 1.4);
+
       var col:Vec3;
+      var alpha = alphaControl;
+
       if (tHit > 0.0) {
-        col = shade(p, rd);
+        var shaded = shade(p, rd);
+        col = mix(background, shaded, alpha);
       } else {
-        var g = 0.12 + 0.12 * uv.y;
-        col = vec3(g, g * 1.15, g * 1.4);
+        col = background;
       }
 
-      // Default: opaque. Child shaders can override fragment() for custom alpha
       output.color = vec4(col, 1.0);
     }
   }

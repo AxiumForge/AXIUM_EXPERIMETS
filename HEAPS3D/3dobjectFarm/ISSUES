@@ -14,6 +14,6 @@ Ret disse former ved at bruge sc og sequence sc.
 -[] Undulating plane bør måske stå stille det er en plane så den forsvinder meget ud af synsfeltet 
 
 ** UI
--[] Sidepanelet skifter position mellem lille og fullsscreen fra venstre til højre side
+-[] Sidepanelet skifter position mellem lille og fullsscreen fra venstre til højre side - fastgør det altid til højre side. 
 
 

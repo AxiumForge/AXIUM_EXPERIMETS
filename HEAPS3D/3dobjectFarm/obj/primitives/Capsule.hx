@@ -1,46 +1,45 @@
 package obj.primitives;
 
-import h3d.Vector;
+class Capsule implements AxObjectClass {
 
-class Capsule {
-  public static var color = new Vector(0.9, 0.6, 0.25);
-  public static var a = new Vector(-0.4, -0.4, -1.1);
-  public static var b = new Vector(0.6, 0.5, -1.1);
-  public static var radius = 0.22;
+  public function new() {}
 
-  public static inline function distance(p:Vector):Float {
-    var paX = p.x - a.x;
-    var paY = p.y - a.y;
-    var paZ = p.z - a.z;
-    var baX = b.x - a.x;
-    var baY = b.y - a.y;
-    var baZ = b.z - a.z;
-    var baLen2 = baX * baX + baY * baY + baZ * baZ;
-    var h = clamp((paX * baX + paY * baY + paZ * baZ) / baLen2, 0.0, 1.0);
-    var dx = paX - baX * h;
-    var dy = paY - baY * h;
-    var dz = paZ - baZ * h;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz) - radius;
+  public function shader():hxsl.Shader {
+    var s = AxDefaultShaders.capsuleShader();
+
+    var obj = object();
+    var params = obj.sdf.params;
+    var mat = obj.material;
+
+    s.capsuleA.set(params.a.x, params.a.y, params.a.z);
+    s.capsuleB.set(params.b.x, params.b.y, params.b.z);
+    s.capsuleRadius = params.radius;
+    s.capsuleColor.set(mat.color.r, mat.color.g, mat.color.b);
+
+    return s;
   }
 
-  static inline function clamp(v:Float, lo:Float, hi:Float):Float {
-    return v < lo ? lo : (v > hi ? hi : v);
+  public function object():PdfObject {
+    return {
+      name: "Capsule",
+      sdf: {
+        kind: "sdCapsule",
+        params: {
+          a: {x: 0.0, y: -0.4, z: 0.0},
+          b: {x: 0.0, y: 0.4, z: 0.0},
+          radius: 0.3
+        }
+      },
+      transform: {
+        position: {x: 0.0, y: 0.0, z: 0.0},
+        rotation: {x: 0.0, y: 0.0, z: 0.0},
+        scale: {x: 1.0, y: 1.0, z: 1.0}
+      },
+      material: {
+        color: {r: 0.3, g: 0.85, b: 0.4, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
-}
-
-class CapsuleShader extends BaseRaymarchShader {
-  static var SRC = {
-    function map(p:Vec3):Vec4 {
-      var pr = rotateXYZ(p, vec3(time * 0.5, time * 0.7, time * 0.3));
-      var a = vec3(0.0, -0.4, 0.0);
-      var b = vec3(0.0, 0.4, 0.0);
-      var r = 0.3;
-      var pa = pr - a;
-      var ba = b - a;
-      var h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-      var dist = length(pa - ba * h) - r;
-      var col = vec3(0.3, 0.85, 0.4);
-      return vec4(dist, col.x, col.y, col.z);
-    }
-  };
 }

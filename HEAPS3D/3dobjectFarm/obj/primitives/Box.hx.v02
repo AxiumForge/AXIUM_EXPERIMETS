@@ -1,29 +1,30 @@
 package obj.primitives;
 
-class Pyramid implements AxObjectClass {
+class Box implements AxObjectClass {
 
   public function new() {}
 
   public function shader():hxsl.Shader {
-    var s = AxDefaultShaders.pyramidShader();
+    var s = AxDefaultShaders.boxShader();
 
+    // Set Box-specific uniforms from object() data
     var obj = object();
     var params = obj.sdf.params;
     var mat = obj.material;
 
-    s.pyramidHeight = params.height;
-    s.pyramidColor.set(mat.color.r, mat.color.g, mat.color.b);
+    s.boxSize.set(params.halfExtents.x, params.halfExtents.y, params.halfExtents.z);
+    s.boxColor.set(mat.color.r, mat.color.g, mat.color.b);
 
     return s;
   }
 
   public function object():PdfObject {
     return {
-      name: "Pyramid",
+      name: "Box",
       sdf: {
-        kind: "sdPyramid",
+        kind: "sdBox",
         params: {
-          height: 0.6
+          halfExtents: {x: 0.5, y: 0.35, z: 0.45}
         }
       },
       transform: {
@@ -32,7 +33,7 @@ class Pyramid implements AxObjectClass {
         scale: {x: 1.0, y: 1.0, z: 1.0}
       },
       material: {
-        color: {r: 0.95, g: 0.8, b: 0.4, a: 1.0},
+        color: {r: 0.65, g: 0.35, b: 0.55, a: 1.0},
         roughness: 0.5,
         metallic: 0.0
       }

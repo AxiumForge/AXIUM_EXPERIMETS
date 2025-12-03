@@ -39,8 +39,8 @@ class ShapeCatalog {
     Create shader instance for a given shape name using categories.
 
     Supports both patterns:
-    - New AxObjectClass v0.1: Instantiate shape object, call shader() method
-    - Legacy: Directly instantiate Shader class
+    - AxObjectClass v0.2: Instantiate shape object, call shader() method
+    - Legacy: Directly instantiate Shader class (for unconverted shapes)
   */
   public static function createShaderForShape(name:String, categories:ReadOnlyArray<ShapeCategory>):BaseRaymarchShader {
     for (cat in categories) {

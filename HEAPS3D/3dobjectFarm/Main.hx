@@ -72,9 +72,6 @@ class Main extends App {
     shader = ShapeCatalog.createShaderForShape("Box", shapeCategories);
     fx = new ScreenFx(shader);
 
-    // Enable alpha blending for transparency
-    fx.pass.setBlendMode(Alpha);
-
     copy = new Copy();
     Window.getInstance().addEventTarget(onEvent);
 
@@ -180,9 +177,6 @@ class Main extends App {
     // Recreate ScreenFx with new shader
     fx.dispose();
     fx = new ScreenFx(shader);
-
-    // Enable alpha blending for transparency
-    fx.pass.setBlendMode(Alpha);
 
     trace("Selected shape: " + shapeNames[currentShape]);
 

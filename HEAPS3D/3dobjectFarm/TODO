@@ -1,5 +1,37 @@
 # TODO
 
+## Alpha Transparency for SDF Shapes (2025-12-03)
+
+**Status:** Midlertidig workaround implementeret for Box shader
+
+**Problem:**
+- Rigtig alpha blending (gennemsigtige SDF objekter) virker ikke i Heaps ScreenShader setup
+- Når `output.color = vec4(col, alpha)` med alpha < 1.0, bliver objekter ikke gennemsigtige
+- I stedet påvirkes farve intensitet/genskin
+
+**Hvad vi har prøvet:**
+1. ✅ Tilføjet `alphaControl` parameter til BaseRaymarchShader
+2. ✅ Enabled alpha blending: `fx.pass.setBlendMode(Alpha)` i Main.hx
+3. ✅ Override fragment() i Box shader til at output alpha kanal
+4. ⚠️ Resultat: Alpha kanal virker ikke - farve/intensitet ændres i stedet
+
+**Nuværende workaround (Box.hx:45-59):**
+- Bruger `mix(background, shaded, alpha)` til at blande objekt mod baggrund
+- Outputter fast `alpha = 1.0` for at undgå dimming
+- Dette simulerer transparency men er ikke rigtig alpha blending
+
+**Konklusion:**
+- Samme problem som LayeredScene (se nedenfor)
+- ScreenShader + ScreenFx rendering pipeline understøtter ikke rigtig alpha blending
+- Mulige årsager: texture format, render target setup, eller Heaps limitation
+
+**Næste skridt:**
+- Acceptér limitation og brug mix() workaround for shapes der skal have "alpha" kontrol
+- Eller undersøg dybere i Heaps rendering pipeline for rigtig alpha blending
+- Dokumentér workaround pattern for andre shapes
+
+---
+
 ## LayeredScene Transparency Issue
 
 **Problem:**

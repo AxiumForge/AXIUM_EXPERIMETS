@@ -42,18 +42,21 @@ class BoxShader extends BaseRaymarchShader {
       var p = rm.xyz;
       var tHit = rm.w;
 
+      var g = 0.12 + 0.12 * uv.y;
+      var background = vec3(g, g * 1.15, g * 1.4);
+
       var col:Vec3;
       var alpha = alphaControl; // Use alpha control for the box
 
       if (tHit > 0.0) {
-        col = shade(p, rd);
+        var shaded = shade(p, rd);
+        // Blend shaded object against background using alpha, keeping output alpha opaque to avoid dimming
+        col = mix(background, shaded, alpha);
       } else {
-        var g = 0.12 + 0.12 * uv.y;
-        col = vec3(g, g * 1.15, g * 1.4);
-        alpha = 1.0; // Background always opaque
+        col = background;
       }
 
-      output.color = vec4(col, alpha);
+      output.color = vec4(col, 1.0);
     }
   };
 }

@@ -65,6 +65,13 @@ class ShapePanel {
     refreshShapeButtons();
   }
 
+  /** Update alpha display text. */
+  public function setAlpha(alpha:Float):Void {
+    if (alphaText != null) {
+      alphaText.text = "Alpha: " + Math.round(alpha * 100) + "%";
+    }
+  }
+
   /** Handle keyboard/mouse events relevant to the panel. Returns true if event was consumed. */
   public function handleEvent(e:Event):Bool {
     switch (e.kind) {
@@ -136,7 +143,7 @@ class ShapePanel {
     title.y = 18;
 
     // Scrollable shape list container with masking
-    var scrollAreaHeight = panelHeight - 230; // Leave space for title and help
+    var scrollAreaHeight = panelHeight - 250; // Leave space for title and help (180) + title (60) + padding (10)
     var scrollMask = new Mask(panelWidth - 20, scrollAreaHeight, s2d);
     scrollMask.x = panelX + 10;
     scrollMask.y = 70;
@@ -211,11 +218,11 @@ class ShapePanel {
     maxScroll = Math.max(0, yPos - scrollAreaHeight);
     uiPanel = new Object(s2d); // Mark UI as initialized
 
-    // Help section at bottom
-    var helpY = panelHeight - 160;
+    // Help section at bottom (increased height for alpha display)
+    var helpY = panelHeight - 180;
     var helpBg = new Graphics(s2d);
     helpBg.beginFill(0x2a2a2a);
-    helpBg.drawRect(0, 0, panelWidth, 160);
+    helpBg.drawRect(0, 0, panelWidth, 180);
     helpBg.endFill();
     helpBg.x = panelX;
     helpBg.y = helpY;
@@ -245,6 +252,22 @@ class ShapePanel {
       helpText.y = lineY;
       lineY += 22;
     }
+
+    // Alpha display with background - positioned above help lines
+    var alphaY = helpY + 130; // Position it higher up in the help section
+    var alphaBg = new Graphics(s2d);
+    alphaBg.beginFill(0x444444);
+    alphaBg.drawRoundedRect(0, 0, panelWidth - 30, 35, 5);
+    alphaBg.endFill();
+    alphaBg.x = panelX + 15;
+    alphaBg.y = alphaY;
+
+    alphaText = new Text(font, s2d);
+    alphaText.text = "Alpha: 100%";
+    alphaText.textColor = 0x00FF00; // Bright green
+    alphaText.scale(1.4);
+    alphaText.x = panelX + 25;
+    alphaText.y = alphaY + 7;
   }
 
   function refreshShapeButtons():Void {

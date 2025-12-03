@@ -29,5 +29,31 @@ class BoxShader extends BaseRaymarchShader {
       var col = vec3(0.65, 0.35, 0.55);
       return vec4(dist, col.x, col.y, col.z);
     }
+
+    // Override fragment() to add alpha transparency control
+    function fragment() {
+      var uv = calculatedUV * 2.0 - 1.0;
+      uv.x *= resolution.x / resolution.y;
+
+      var ro = cameraPos;
+      var rd = normalize(cameraForward + uv.x * cameraRight + uv.y * cameraUp);
+
+      var rm = raymarch(ro, rd);
+      var p = rm.xyz;
+      var tHit = rm.w;
+
+      var col:Vec3;
+      var alpha = alphaControl; // Use alpha control for the box
+
+      if (tHit > 0.0) {
+        col = shade(p, rd);
+      } else {
+        var g = 0.12 + 0.12 * uv.y;
+        col = vec3(g, g * 1.15, g * 1.4);
+        alpha = 1.0; // Background always opaque
+      }
+
+      output.color = vec4(col, alpha);
+    }
   };
 }

@@ -87,13 +87,6 @@ class BaseRaymarchShader extends ScreenShader {
       return col;
     }
 
-    // Override this in child shaders for custom alpha behavior
-    // Default: uses alphaControl parameter (controlled by LEFT/RIGHT arrow keys)
-    // Examples: transparent background, distance-based fade, material-based alpha
-    function getAlpha(p:Vec3, rd:Vec3, tHit:Float):Float {
-      return alphaControl;
-    }
-
     function fragment() {
       var uv = calculatedUV * 2.0 - 1.0;
       uv.x *= resolution.x / resolution.y;
@@ -113,8 +106,8 @@ class BaseRaymarchShader extends ScreenShader {
         col = vec3(g, g * 1.15, g * 1.4);
       }
 
-      var alpha = getAlpha(p, rd, tHit);
-      output.color = vec4(col, alpha);
+      // Default: opaque. Child shaders can override fragment() for custom alpha
+      output.color = vec4(col, 1.0);
     }
   }
 }

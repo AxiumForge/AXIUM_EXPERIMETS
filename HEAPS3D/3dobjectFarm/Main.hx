@@ -29,7 +29,7 @@ class Main extends App {
   var copy : Copy;
   var t : Float = 0.0;
   var distance : Float = 5.0;
-  var alpha : Float = 1.0; // Alpha channel control (0.0 = transparent, 1.0 = opaque)
+  var alpha : Float = 1.0; // Alpha control for shapes that support it (0.0 = transparent, 1.0 = opaque)
 
   // Shape management
   var shapePanel : ShapePanel;
@@ -71,6 +71,10 @@ class Main extends App {
     // Setup initial shader
     shader = ShapeCatalog.createShaderForShape("Box", shapeCategories);
     fx = new ScreenFx(shader);
+
+    // Enable alpha blending for transparency
+    fx.pass.setBlendMode(Alpha);
+
     copy = new Copy();
     Window.getInstance().addEventTarget(onEvent);
 
@@ -177,6 +181,9 @@ class Main extends App {
     fx.dispose();
     fx = new ScreenFx(shader);
 
+    // Enable alpha blending for transparency
+    fx.pass.setBlendMode(Alpha);
+
     trace("Selected shape: " + shapeNames[currentShape]);
 
     // Update UI if it exists
@@ -205,6 +212,11 @@ class Main extends App {
     shader.time = t;
     shader.resolution.set(viewportWidth, viewportHeight);
     shader.alphaControl = alpha;
+
+    // Update UI alpha display
+    if (shapePanel != null) {
+      shapePanel.setAlpha(alpha);
+    }
 
     var cam = computeCamera(t);
     shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
@@ -398,10 +410,10 @@ class Main extends App {
           framesBeforeScreenshot = 3;
         } else if (e.keyCode == Key.LEFT) {
           alpha = clamp(alpha - 0.05, 0.0, 1.0);
-          trace("Alpha decreased: " + alpha);
+          trace("Alpha decreased: " + Math.round(alpha * 100) + "%");
         } else if (e.keyCode == Key.RIGHT) {
           alpha = clamp(alpha + 0.05, 0.0, 1.0);
-          trace("Alpha increased: " + alpha);
+          trace("Alpha increased: " + Math.round(alpha * 100) + "%");
         }
       case EWheel:
         // Zoom camera (if not over UI panel - already checked by shapePanel.handleEvent)

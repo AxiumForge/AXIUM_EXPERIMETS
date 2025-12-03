@@ -1,6 +1,7 @@
 package;
 
 import haxe.ds.ReadOnlyArray;
+import h3d.shader.ScreenShader;
 import Shapes; // Barrel import - required for Type.resolveClass() to find shader classes
 
 typedef ShapeCategory = {
@@ -39,19 +40,21 @@ class ShapeCatalog {
     Create shader instance for a given shape name using categories.
 
     Supports both patterns:
-    - AxObjectClass v0.2: Instantiate shape object, call shader() method
+    - AxObjectClass v0.3: SdfSceneShader (ScreenShader)
+    - AxObjectClass v0.2: *ShaderImpl (BaseRaymarchShader)
     - Legacy: Directly instantiate Shader class (for unconverted shapes)
   */
   public static function createShaderForShape(name:String, categories:ReadOnlyArray<ShapeCategory>):BaseRaymarchShader {
     for (cat in categories) {
       for (shapeName in cat.shapes) {
         if (shapeName == name) {
-          // Try AxObjectClass pattern first (new v0.1 standard)
+          // Try AxObjectClass pattern first (v0.2/v0.3 standard)
           var shapeClassName = cat.pkg + "." + name;
           var shapeCls = Type.resolveClass(shapeClassName);
           if (shapeCls != null) {
             var shapeInstance:AxObjectClass = cast Type.createInstance(shapeCls, []);
             var shader = shapeInstance.shader();
+            // v0.2: *ShaderImpl extends BaseRaymarchShader
             if (Std.isOfType(shader, BaseRaymarchShader)) {
               return cast shader;
             }

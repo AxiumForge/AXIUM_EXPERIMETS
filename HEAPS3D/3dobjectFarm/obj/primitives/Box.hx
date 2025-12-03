@@ -2,23 +2,49 @@ package obj.primitives;
 
 import h3d.Vector;
 
-class Box {
-  public static var color = new Vector(0.65, 0.35, 0.55);
-  public static var halfExtents = new Vector(0.5, 0.35, 0.45);
+/**
+  Box - Axis-aligned box primitive (AxObjectClass v0.1)
 
-  public static inline function distance(p:Vector):Float {
-    var qx = Math.abs(p.x) - halfExtents.x;
-    var qy = Math.abs(p.y) - halfExtents.y;
-    var qz = Math.abs(p.z) - halfExtents.z;
-    var ax = Math.max(qx, 0.0);
-    var ay = Math.max(qy, 0.0);
-    var az = Math.max(qz, 0.0);
-    var outside = Math.sqrt(ax * ax + ay * ay + az * az);
-    var inside = Math.min(Math.max(qx, Math.max(qy, qz)), 0.0);
-    return outside + inside;
+  This is the reference implementation for the AxObjectClass pattern.
+  All future shapes should follow this structure.
+**/
+class Box implements AxObjectClass {
+
+  public function new() {}
+
+  public function shader():hxsl.Shader {
+    return new BoxShader();
+  }
+
+  public function object():PdfObject {
+    return {
+      name: "Box",
+      sdf: {
+        kind: "sdBox",
+        params: {
+          halfExtents: {x: 0.5, y: 0.35, z: 0.45}
+        }
+      },
+      transform: {
+        position: {x: 0.0, y: 0.0, z: 0.0},
+        rotation: {x: 0.0, y: 0.0, z: 0.0},
+        scale: {x: 1.0, y: 1.0, z: 1.0}
+      },
+      material: {
+        color: {r: 0.65, g: 0.35, b: 0.55, a: 1.0},
+        roughness: 0.5,
+        metallic: 0.0
+      }
+    };
   }
 }
 
+/**
+  BoxShader - GPU raymarching shader for Box SDF
+
+  Implements the signed distance function for an axis-aligned box.
+  Extends BaseRaymarchShader for common raymarching/lighting logic.
+**/
 class BoxShader extends BaseRaymarchShader {
   static var SRC = {
     function map(p:Vec3):Vec4 {

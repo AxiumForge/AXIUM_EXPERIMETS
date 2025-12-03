@@ -35,15 +35,33 @@ class ShapeCatalog {
     return names;
   }
 
-  /** Create shader instance for a given shape name using categories. */
+  /**
+    Create shader instance for a given shape name using categories.
+
+    Supports both patterns:
+    - New AxObjectClass v0.1: Instantiate shape object, call shader() method
+    - Legacy: Directly instantiate Shader class
+  */
   public static function createShaderForShape(name:String, categories:ReadOnlyArray<ShapeCategory>):BaseRaymarchShader {
     for (cat in categories) {
       for (shapeName in cat.shapes) {
         if (shapeName == name) {
-          var className = cat.pkg + "." + name + "Shader";
-          var cls = Type.resolveClass(className);
-          if (cls != null) {
-            return cast Type.createInstance(cls, []);
+          // Try AxObjectClass pattern first (new v0.1 standard)
+          var shapeClassName = cat.pkg + "." + name;
+          var shapeCls = Type.resolveClass(shapeClassName);
+          if (shapeCls != null) {
+            var shapeInstance:AxObjectClass = cast Type.createInstance(shapeCls, []);
+            var shader = shapeInstance.shader();
+            if (Std.isOfType(shader, BaseRaymarchShader)) {
+              return cast shader;
+            }
+          }
+
+          // Fallback to legacy pattern (direct shader instantiation)
+          var shaderClassName = cat.pkg + "." + name + "Shader";
+          var shaderCls = Type.resolveClass(shaderClassName);
+          if (shaderCls != null) {
+            return cast Type.createInstance(shaderCls, []);
           }
         }
       }

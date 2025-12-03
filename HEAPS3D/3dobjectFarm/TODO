@@ -2,7 +2,7 @@
 
 ## AxObjectClass Refaktorering (v0.1) - CRITICAL 🔴
 
-**Status:** Planlagt - ikke startet
+**Status:** I gang - Fase 0 + Fase 1 (Box pilot) ✅ FÆRDIG (2025-12-03)
 
 **Problem:**
 Nuværende klassestruktur matcher IKKE AxObjectClass standard fra docs/AxObjectClassDefvo_1.md
@@ -29,9 +29,9 @@ class Box implements AxObjectClass {
 
 ---
 
-### Fase 0: Foundation (Forberedelse)
+### Fase 0: Foundation (Forberedelse) ✅ FÆRDIG
 
-- [ ] **0.1** Opret `AxObjectClass.hx` interface
+- [x] **0.1** Opret `AxObjectClass.hx` interface
   ```haxe
   interface AxObjectClass {
       public function shader():hxsl.Shader;
@@ -39,7 +39,7 @@ class Box implements AxObjectClass {
   }
   ```
 
-- [ ] **0.2** Opret `PdfObject.hx` typedef
+- [x] **0.2** Opret `PdfObject.hx` typedef
   ```haxe
   typedef PdfObject = {
       name: String,
@@ -49,32 +49,32 @@ class Box implements AxObjectClass {
   }
   ```
 
-- [ ] **0.3** Beslut shader return type strategi
-  - Option A: Returnér BaseRaymarchShader instance
-  - Option B: Returnér custom shader per shape
-  - Option C: Returnér shader data som shaderen compiles fra
+- [x] **0.3** Beslut shader return type strategi
+  - ✅ **VALGT: Option B** - Returnér custom shader per shape (mest fleksibelt)
 
 ---
 
-### Fase 1: Pilot - Konverter 1 Shape (Box)
+### Fase 1: Pilot - Konverter 1 Shape (Box) ✅ FÆRDIG
 
-- [ ] **1.1** Backup nuværende Box.hx til Box.hx.old
+- [x] **1.1** Backup nuværende Box.hx til Box.hx.old
 
-- [ ] **1.2** Konverter Box til AxObjectClass
-  - [ ] Fjern static color og distance()
-  - [ ] Add implements AxObjectClass
-  - [ ] Add new() constructor
-  - [ ] Add shader() metode (integrer BoxShader funktionalitet)
-  - [ ] Add object() metode (returnér PdfObject med box data)
+- [x] **1.2** Konverter Box til AxObjectClass
+  - [x] Fjern static color og distance()
+  - [x] Add implements AxObjectClass
+  - [x] Add new() constructor
+  - [x] Add shader() metode (integrer BoxShader funktionalitet)
+  - [x] Add object() metode (returnér PdfObject med box data)
 
-- [ ] **1.3** Opdater ShapeCatalog til at håndtere AxObjectClass
-  - [ ] Ændr createShaderForShape() til at instantiere Box og kalde shader()
-  - [ ] Test at Box loader og renderer korrekt
+- [x] **1.3** Opdater ShapeCatalog til at håndtere AxObjectClass
+  - [x] Ændr createShaderForShape() til at instantiere Box og kalde shader()
+  - [x] Hybrid system: understøtter både AxObjectClass og legacy patterns
+  - [x] Test at Box loader og renderer korrekt
 
-- [ ] **1.4** Test pilot implementation
-  - [ ] Byg projekt
-  - [ ] Kør med --sc --box
-  - [ ] Verificér at Box renderer identisk med før
+- [x] **1.4** Test pilot implementation
+  - [x] Byg projekt
+  - [x] Kør med --sc --box
+  - [x] Verificér at Box renderer identisk med før
+  - [x] **RESULTAT:** Box screenshot gemt til sc/Box.png - SUCCESS! ✅
 
 ---
 
@@ -344,3 +344,5 @@ Problemet er sandsynligvis i Heaps/OpenGL rendering setup:
 - Commit og Push efter hver færdige opgave blok
 - Vi taler dansk til hinanden - al tekst i projekt/repo og al kode er engelsk baseret
 
+## ISSUES
+- Tjek HEAPS3D/3dobjectFarm/ISSUES rutinemæssigt

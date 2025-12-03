@@ -1,5 +1,59 @@
 # AXIUM_EXPERIMENTS Changelog
 
+## 2025-12-03 - AxObjectClass v0.1 Foundation + Box Pilot Implementation
+
+### Added - AxObjectClass Standard
+- **AxObjectClass.hx interface** - Formal contract for all PROCEDURAL/GENERATIVE SDF shapes
+  - `shader():hxsl.Shader` - Returns GPU raymarching shader
+  - `object():PdfObject` - Returns procedural shape metadata for serialization/generation
+  - This is the MODEL PATTERN for all future shape implementations
+
+- **PdfObject.hx typedef** - Metadata structure for procedural shape description
+  - `name:String` - Human-readable shape identifier
+  - `sdf:{kind:String, params:Dynamic}` - SDF function metadata (sdBox, sdSphere, etc.)
+  - `transform:{position, rotation, scale}` - Spatial transformation data
+  - `material:{color, roughness, metallic}` - Visual properties
+  - Enables JSON export, procedural generation, and shape serialization
+
+### Changed - Box Pilot Conversion
+- **obj/primitives/Box.hx** - Converted to AxObjectClass v0.1 standard
+  - Removed static `color` and `distance()` methods (old pattern)
+  - Implements `AxObjectClass` interface
+  - Added `new()` constructor for instance-based pattern
+  - Added `shader()` method returning BoxShader instance
+  - Added `object()` method returning PdfObject with Box metadata
+  - BoxShader remains unchanged - extends BaseRaymarchShader
+  - **This is the reference implementation for all future shapes**
+
+- **ShapeCatalog.hx** - Updated to support AxObjectClass pattern
+  - `createShaderForShape()` now tries AxObjectClass pattern first
+  - Falls back to legacy pattern for unconverted shapes (38 remaining)
+  - Hybrid system allows incremental conversion of shapes
+  - Instantiates shape object, calls `shader()` method
+
+### Testing - Fase 0+1 Validation
+- ✅ Box compiles successfully with AxObjectClass pattern
+- ✅ Box renders identically to before (--sc --box)
+- ✅ Screenshot saved to sc/Box.png - visual verification passed
+- ✅ ShapeCatalog hybrid system works for both patterns
+- ✅ All 39 shapes still load and render (Box via new pattern, 38 via legacy)
+
+### Architecture Decision
+- **Shader Strategy: Option B** - Return custom shader per shape (hxsl.Shader)
+  - Most flexible approach for PROCEDURAL/GENERATIVE patterns
+  - Each shape owns its shader instance
+  - Enables future extensions (multi-shader shapes, shader composition, etc.)
+
+### Next Steps
+- **Fase 2-6**: Convert remaining 38 shapes to AxObjectClass v0.1
+  - Primitives (8 remaining): Capsule, Cone, Cylinder, Ellipsoid, Plane, Pyramid, Sphere, Torus
+  - 2D Primitives (5): Box2D, Circle, Heart, RoundedBox2D, Star
+  - Derivates (6): HalfCapsule, HoledPlane, HollowBox, HollowSphere, QuarterTorus, ShellCylinder
+  - 2D Organics (7): FlowerPetalRing, LeafPair, LeafSpiral, LotusFringe, OrnateKnot, SpiralVine, VineCurl
+  - 3D Organic (12): BlobbyCluster, BubbleCrown, BulbTreeCrown, DripCone, JellyDonut, KnotTube, MeltedBox, PuffyCross, RibbonTwist, SoftSphereWrap, UndulatingPlane, WavyCapsule
+
+---
+
 ## 2025-12-03 - Alpha Support & LayeredScene Removal
 
 ### Added

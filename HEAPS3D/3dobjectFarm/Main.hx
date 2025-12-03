@@ -29,6 +29,7 @@ class Main extends App {
   var copy : Copy;
   var t : Float = 0.0;
   var distance : Float = 5.0;
+  var alpha : Float = 1.0; // Alpha channel control (0.0 = transparent, 1.0 = opaque)
 
   // Shape management
   var shapePanel : ShapePanel;
@@ -203,6 +204,7 @@ class Main extends App {
     // Update shader uniforms every frame
     shader.time = t;
     shader.resolution.set(viewportWidth, viewportHeight);
+    shader.alphaControl = alpha;
 
     var cam = computeCamera(t);
     shader.cameraPos.set(cam.pos.x, cam.pos.y, cam.pos.z);
@@ -394,6 +396,12 @@ class Main extends App {
           trace("Screenshot key pressed (F12 or P)");
           pendingScreenshot = true;
           framesBeforeScreenshot = 3;
+        } else if (e.keyCode == Key.LEFT) {
+          alpha = clamp(alpha - 0.05, 0.0, 1.0);
+          trace("Alpha decreased: " + alpha);
+        } else if (e.keyCode == Key.RIGHT) {
+          alpha = clamp(alpha + 0.05, 0.0, 1.0);
+          trace("Alpha increased: " + alpha);
         }
       case EWheel:
         // Zoom camera (if not over UI panel - already checked by shapePanel.handleEvent)

@@ -1,0 +1,15 @@
+## Project Issues
+Ret disse former ved at bruge sc og sequence sc. 
+
+-[] Cone forvinder når den drejer 
+-[] Pyramid er splittet op 
+-[] Heart 2D er for stor til fladen og omvendt 
+-[] HollowBox kan ikke ses er hollow så gør en flade gennemsigtig eller hele boksne med en lavere alpha så den er gennemsigtig 
+-[] HollowSphere det samme som HollowBox
+-[] QuarterTorus er 1 ikke 1/4
+-[] ShellCylinder er bere en cylinder 
+-[] DripCone er ude af synsfeltet det meste af tiden 
+-[] BulbTree har ikke brun stamme alt er grønt
+-[] KnotTube er fragmenteret på midten
+-[] Undulating plane bør måske stå stille det er en plane så den forsvinder meget ud af synsfeltet 
+

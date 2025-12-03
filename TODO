@@ -18,6 +18,13 @@
 - [x] Screenshot funktionalitet (F12/P keys + --sc flag)
 - [x] UI panel med shape kategorier og scroll
 
+#### Færdiggjort (2025-12-03)
+- [x] Implementeret alpha support i BaseRaymarchShader med getAlpha() helper funktion
+- [x] Fjernet LayeredScene.hx fra sdfTextures folder (flyttet til separat projekt)
+- [x] Opdateret Shapes.hx og ShapeCatalog.hx (39 shapes)
+- [x] Testet at alle 39 shapes renderer korrekt med alpha support
+- [x] Opdateret CHANGELOG med alpha support dokumentation
+
 #### Mangler �
 - [x] Gør det muligt at bruge --sc med en form --torus --2dbox så du kan se alle former der er i et screenshot - sørg for at --form ikke er hardcoded men et system der automatisk tilføjer ved nye forme.
 - [x] Konverter resterende 19 shapes til module pattern:
@@ -43,10 +50,11 @@
 - [x] Integrer ny Screenshot.hx helper i sekvens-flow (Main refaktor følger senere).
 
 #### Tekniske Noter
-- Package struktur: obj.primitives, obj.primitives2d, obj.derivates, obj._2DOrganics, obj._3dOrganic
+- Package struktur: obj.primitives, obj.primitives2d, obj.derivates, obj.organics2d, obj.organics3d
 - Dynamisk shader instantiering: Type.resolveClass(package + "." + shapeName + "Shader")
 - Shader swapping: fx.dispose() � fx = new ScreenFx(newShader)
-- BaseRaymarchShader h�ndterer: raymarching loop, normal calc, lighting (diffuse, rim, ambient)
+- BaseRaymarchShader håndterer: raymarching loop, normal calc, lighting (diffuse, rim, ambient), alpha channel
+- Alpha support: Child shaders kan override getAlpha(p, rd, tHit) for custom transparency
 - Child shaders: kun implementerer map(p:Vec3):Vec4 funktion
 
 ## N�ste Opgaver
@@ -87,3 +95,4 @@
 - HUSK at alle opslag skal refereres med link i RAG
 - Commit og Push efter hver færdige opgave blok
 - Vi taler dansk til hinanden - al tekst i projekt/repo og al kode er engelsk baseret
+

@@ -31,6 +31,7 @@ class ShapePanel {
   var scrollOffset:Float = 0;
   var maxScroll:Float = 0;
   var shapeButtons:Array<{bg:Graphics, label:Text, interactive:Interactive}>;
+  var alphaText:Text;
 
   /**
     Create the shape panel.
@@ -68,13 +69,13 @@ class ShapePanel {
   public function handleEvent(e:Event):Bool {
     switch (e.kind) {
       case EKeyDown:
-        if (e.keyCode == Key.UP || e.keyCode == Key.LEFT) {
+        if (e.keyCode == Key.UP) {
           var newIndex = (currentShape - 1 + shapeNames.length) % shapeNames.length;
           currentShape = newIndex;
           onShapeSelected(newIndex);
           refreshShapeButtons();
           return true;
-        } else if (e.keyCode == Key.DOWN || e.keyCode == Key.RIGHT) {
+        } else if (e.keyCode == Key.DOWN) {
           var newIndex = (currentShape + 1) % shapeNames.length;
           currentShape = newIndex;
           onShapeSelected(newIndex);
@@ -228,7 +229,8 @@ class ShapePanel {
 
     var helpLines = [
       "Click: Select shape",
-      "UP/DOWN: Navigate",
+      "UP/DOWN: Navigate shapes",
+      "LEFT/RIGHT: Alpha -/+",
       "Mouse wheel: Scroll/Zoom",
       "F12 or P: Screenshot"
     ];

@@ -11,6 +11,7 @@ class BaseRaymarchShader extends ScreenShader {
     @param var cameraForward : Vec3;
     @param var cameraRight : Vec3;
     @param var cameraUp : Vec3;
+    @param var alphaControl : Float;
 
     // Helper functions
     function rotateXYZ(p:Vec3, r:Vec3):Vec3 {
@@ -86,6 +87,13 @@ class BaseRaymarchShader extends ScreenShader {
       return col;
     }
 
+    // Override this in child shaders for custom alpha behavior
+    // Default: uses alphaControl parameter (controlled by LEFT/RIGHT arrow keys)
+    // Examples: transparent background, distance-based fade, material-based alpha
+    function getAlpha(p:Vec3, rd:Vec3, tHit:Float):Float {
+      return alphaControl;
+    }
+
     function fragment() {
       var uv = calculatedUV * 2.0 - 1.0;
       uv.x *= resolution.x / resolution.y;
@@ -105,7 +113,8 @@ class BaseRaymarchShader extends ScreenShader {
         col = vec3(g, g * 1.15, g * 1.4);
       }
 
-      output.color = vec4(col, 1.0);
+      var alpha = getAlpha(p, rd, tHit);
+      output.color = vec4(col, alpha);
     }
   }
 }

@@ -1,5 +1,27 @@
 # AXIUM_EXPERIMENTS Changelog
 
+## 2025-12-03 - Alpha Support & LayeredScene Removal
+
+### Added
+- **Alpha channel support in BaseRaymarchShader** - Flexible alpha rendering system
+  - New `getAlpha(p:Vec3, rd:Vec3, tHit:Float):Float` helper function
+  - Default behavior: opaque rendering (alpha = 1.0)
+  - Child shaders can override `getAlpha()` for custom alpha logic
+  - Examples: transparent backgrounds, distance-based fade, material-based alpha
+  - `fragment()` now uses `getAlpha()` to compute output alpha channel
+
+### Removed
+- **LayeredScene.hx** - Removed from sdfTextures folder (moved to separate project)
+  - Updated Shapes.hx barrel file (39 shapes, down from 40)
+  - Removed "SDF Textures" category from ShapeCatalog.hx
+  - All remaining 39 shapes compile and render correctly
+
+### Testing
+- ✅ All 39 shapes compile successfully with alpha support
+- ✅ Tested rendering of shapes from each category with alpha channel
+- ✅ Screenshots verified: Sphere, Circle, WavyCapsule, Box, Heart, HollowSphere, LeafSpiral, BlobbyCluster
+- ✅ No visual regressions - all shapes render identically with new alpha system
+
 ## 2025-12-02 - Modular SDF Shape Architecture (COMPLETED)
 
 ### Added
